@@ -108,7 +108,7 @@ function hasText(a: Answer | undefined) {
 function Progress({ value, max, label }: { value: number; max: number; label: string }) {
   return (
     <div className="mb-6">
-      <div className="mb-2 text-sm text-muted">{label}</div>
+      <div className="mb-2 font-sans text-sm text-muted">{label}</div>
       <div className="h-1.5 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={value} aria-valuemax={max}>
         <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(value / max) * 100}%` }} />
       </div>

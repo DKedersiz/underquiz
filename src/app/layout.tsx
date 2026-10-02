@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import Link from "next/link";
 import { site } from "@/lib/site";
 import { tr } from "@/messages/tr";
@@ -8,6 +8,18 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin", "latin-ext"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin", "latin-ext"],
+  axes: ["opsz"],
+});
+
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
+  subsets: ["latin", "latin-ext"],
+  axes: ["opsz"],
 });
 
 const geistMono = Geist_Mono({
@@ -33,8 +45,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="tr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-sans">
+    <html lang="tr" className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${sourceSerif.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col font-serif">
         <header className="border-b border-line">
           <div className="mx-auto flex h-14 max-w-3xl items-center px-4">
             <Link href="/" className="flex items-center gap-3" aria-label={site.name}>
@@ -42,7 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <source srcSet="/brand/logo-dark.svg" media="(prefers-color-scheme: dark)" />
                 <img src="/brand/logo.svg" alt={site.name} width={140} height={26} className="h-[26px] w-auto" />
               </picture>
-              <span className="hidden text-sm text-muted sm:inline">{site.tagline}</span>
+              <span className="hidden font-sans text-sm text-muted sm:inline">{site.tagline}</span>
             </Link>
           </div>
         </header>

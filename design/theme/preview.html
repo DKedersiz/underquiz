@@ -1,0 +1,116 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=EB+Garamond:wght@400;600&family=Geist:wght@400;500&family=Geist+Mono&display=block" rel="stylesheet">
+<style>
+:root{--paper:#F3EBDC;--card:#FBF7EE;--ink:#1E3557;--muted:#5F6B7D;--line:#E0D3BA;--red:#C0502E;--code:#EFE6D3;
+--night:#131E33;--ncard:#1A2741;--cream:#ECE2CC;--nmuted:#A3ABBB;--nline:#2B3B5A;--nred:#E2774F;--ncode:#16223A}
+*{box-sizing:border-box}body{margin:0;background:#ddd;font-family:Geist,sans-serif}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.col{padding:28px 26px 32px;position:relative}
+.paper{background:var(--paper);color:var(--ink);background-image:radial-gradient(rgba(120,90,40,.06) 1px,transparent 1px);background-size:3px 3px}
+.night{background:var(--night);color:var(--cream)}
+.label{font:600 12px Geist,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+.night .label{color:var(--nred)}
+.logo{height:26px;margin-bottom:22px;display:block}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:30px;line-height:1.15;margin:0 0 10px;font-variation-settings:"opsz" 72}
+.lead{font-size:17px;line-height:1.6;margin:0 0 22px;opacity:.85}
+.card{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:18px 18px 16px}
+.night .card{border-color:var(--nline);background:var(--ncard)}
+.badges span{font:500 11px Geist,sans-serif;border-radius:99px;padding:3px 9px;margin-right:6px;background:rgba(30,53,87,.08)}
+.badges span.lv{background:var(--red);color:#FBF3E6}
+.night .badges span{background:rgba(236,226,204,.1)} .night .badges span.lv{background:var(--nred);color:#131E33}
+.q{font-size:17px;line-height:1.6;margin:14px 0 10px}
+pre{font:13px/1.55 "Geist Mono",monospace;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:0 0 12px;white-space:pre}
+.night pre{background:var(--ncode);border-color:var(--nline)}
+code{font:.86em "Geist Mono",monospace;background:var(--code);border:1px solid var(--line);border-radius:4px;padding:0 .3em}
+.night code{background:var(--ncode);border-color:var(--nline)}
+.opt{border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-top:8px;font-size:16px;line-height:1.5;display:flex;gap:10px}
+.night .opt{border-color:var(--nline)}
+.opt i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);flex:none;margin-top:4px}
+.opt.sel{border-color:var(--ink);background:rgba(30,53,87,.06)} .opt.sel i{border-color:var(--ink);background:var(--ink);box-shadow:inset 0 0 0 2px var(--card)}
+.night .opt.sel{border-color:var(--cream);background:rgba(236,226,204,.07)} .night .opt.sel i{border-color:var(--cream);background:var(--cream);box-shadow:inset 0 0 0 2px var(--ncard)}
+.btn{display:inline-block;margin-top:14px;background:var(--ink);color:#FBF7EE;font:500 14px Geist,sans-serif;padding:9px 16px;border-radius:8px}
+.night .btn{background:var(--cream);color:#131E33}
+.result{display:flex;align-items:center;gap:16px;margin-top:18px}
+.result .lvl{font-family:Fraunces,serif;font-weight:600;font-size:34px}
+.result .lvl b{color:var(--red);font-weight:600}.night .result .lvl b{color:var(--nred)}
+.stamp{width:62px;transform:rotate(-6deg);opacity:.92}
+.A{font-family:"Source Serif 4",serif}.B{font-family:"EB Garamond",serif}.B .q,.B .lead{font-size:18.5px}.B .opt{font-size:17.5px}.C{font-family:Geist,sans-serif}
+.cap{padding:10px 26px;background:#2a2a2a;color:#eee;font:13px Geist,sans-serif}
+</style></head><body>
+<div class="row cap"><div>A · Fraunces başlık + Source Serif 4 gövde</div><div>B · Fraunces başlık + EB Garamond gövde</div><div>C · Fraunces başlık + Geist (sans) gövde</div></div>
+<div class="row"><div class="col paper A"><div class="label">Eski kâğıt (açık tema)</div><img class="logo" src="../logo/a2-wave-fraunces600.svg">
+<h1>Projende kullandın. Peki altında ne olduğunu anlatabilir misin?</h1>
+<p class="lead">Spring ve JPA'da hangi seviyede olduğunu ve neyi çalışman gerektiğini gerçek senaryolu sorularla gösterir.</p>
+<div class="card"><div class="badges"><span class="lv">Seviye 3</span><span>Persistence context</span></div>
+<p class="q">Güncellemeden sonra <code>stock</code> ve <code>created_at</code> sütunları <code>null</code> oluyor. Sebep ve doğru düzeltme hangisi?</p>
+<pre>Product product = new Product();
+product.setId(request.id());
+product.setName(request.name());
+productRepository.save(product);</pre>
+<div class="opt sel"><i></i><span>Id dolu olduğu için <code>save()</code> merge yapar: boş alanlar da kayda kopyalanır.</span></div>
+<div class="opt"><i></i><span>Hibernate eski satırı silip aynı id ile yeni satır ekler.</span></div>
+<span class="btn">Devam</span></div>
+<div class="result"><img class="stamp" src="../logo/b2-seal-waveq-stamped.svg"><div class="lvl"><b>3</b> · İçini biliyor</div></div></div><div class="col paper B"><div class="label">Eski kâğıt (açık tema)</div><img class="logo" src="../logo/a2-wave-fraunces600.svg">
+<h1>Projende kullandın. Peki altında ne olduğunu anlatabilir misin?</h1>
+<p class="lead">Spring ve JPA'da hangi seviyede olduğunu ve neyi çalışman gerektiğini gerçek senaryolu sorularla gösterir.</p>
+<div class="card"><div class="badges"><span class="lv">Seviye 3</span><span>Persistence context</span></div>
+<p class="q">Güncellemeden sonra <code>stock</code> ve <code>created_at</code> sütunları <code>null</code> oluyor. Sebep ve doğru düzeltme hangisi?</p>
+<pre>Product product = new Product();
+product.setId(request.id());
+product.setName(request.name());
+productRepository.save(product);</pre>
+<div class="opt sel"><i></i><span>Id dolu olduğu için <code>save()</code> merge yapar: boş alanlar da kayda kopyalanır.</span></div>
+<div class="opt"><i></i><span>Hibernate eski satırı silip aynı id ile yeni satır ekler.</span></div>
+<span class="btn">Devam</span></div>
+<div class="result"><img class="stamp" src="../logo/b2-seal-waveq-stamped.svg"><div class="lvl"><b>3</b> · İçini biliyor</div></div></div><div class="col paper C"><div class="label">Eski kâğıt (açık tema)</div><img class="logo" src="../logo/a2-wave-fraunces600.svg">
+<h1>Projende kullandın. Peki altında ne olduğunu anlatabilir misin?</h1>
+<p class="lead">Spring ve JPA'da hangi seviyede olduğunu ve neyi çalışman gerektiğini gerçek senaryolu sorularla gösterir.</p>
+<div class="card"><div class="badges"><span class="lv">Seviye 3</span><span>Persistence context</span></div>
+<p class="q">Güncellemeden sonra <code>stock</code> ve <code>created_at</code> sütunları <code>null</code> oluyor. Sebep ve doğru düzeltme hangisi?</p>
+<pre>Product product = new Product();
+product.setId(request.id());
+product.setName(request.name());
+productRepository.save(product);</pre>
+<div class="opt sel"><i></i><span>Id dolu olduğu için <code>save()</code> merge yapar: boş alanlar da kayda kopyalanır.</span></div>
+<div class="opt"><i></i><span>Hibernate eski satırı silip aynı id ile yeni satır ekler.</span></div>
+<span class="btn">Devam</span></div>
+<div class="result"><img class="stamp" src="../logo/b2-seal-waveq-stamped.svg"><div class="lvl"><b>3</b> · İçini biliyor</div></div></div></div>
+<div class="row"><div class="col night A"><div class="label">Ay ışıklı gece (koyu tema)</div><img class="logo" src="../logo/a2-wave-fraunces600-dark.svg">
+<h1>Projende kullandın. Peki altında ne olduğunu anlatabilir misin?</h1>
+<p class="lead">Spring ve JPA'da hangi seviyede olduğunu ve neyi çalışman gerektiğini gerçek senaryolu sorularla gösterir.</p>
+<div class="card"><div class="badges"><span class="lv">Seviye 3</span><span>Persistence context</span></div>
+<p class="q">Güncellemeden sonra <code>stock</code> ve <code>created_at</code> sütunları <code>null</code> oluyor. Sebep ve doğru düzeltme hangisi?</p>
+<pre>Product product = new Product();
+product.setId(request.id());
+product.setName(request.name());
+productRepository.save(product);</pre>
+<div class="opt sel"><i></i><span>Id dolu olduğu için <code>save()</code> merge yapar: boş alanlar da kayda kopyalanır.</span></div>
+<div class="opt"><i></i><span>Hibernate eski satırı silip aynı id ile yeni satır ekler.</span></div>
+<span class="btn">Devam</span></div>
+<div class="result"><img class="stamp" src="../logo/b2-seal-waveq-stamped.svg"><div class="lvl"><b>3</b> · İçini biliyor</div></div></div><div class="col night B"><div class="label">Ay ışıklı gece (koyu tema)</div><img class="logo" src="../logo/a2-wave-fraunces600-dark.svg">
+<h1>Projende kullandın. Peki altında ne olduğunu anlatabilir misin?</h1>
+<p class="lead">Spring ve JPA'da hangi seviyede olduğunu ve neyi çalışman gerektiğini gerçek senaryolu sorularla gösterir.</p>
+<div class="card"><div class="badges"><span class="lv">Seviye 3</span><span>Persistence context</span></div>
+<p class="q">Güncellemeden sonra <code>stock</code> ve <code>created_at</code> sütunları <code>null</code> oluyor. Sebep ve doğru düzeltme hangisi?</p>
+<pre>Product product = new Product();
+product.setId(request.id());
+product.setName(request.name());
+productRepository.save(product);</pre>
+<div class="opt sel"><i></i><span>Id dolu olduğu için <code>save()</code> merge yapar: boş alanlar da kayda kopyalanır.</span></div>
+<div class="opt"><i></i><span>Hibernate eski satırı silip aynı id ile yeni satır ekler.</span></div>
+<span class="btn">Devam</span></div>
+<div class="result"><img class="stamp" src="../logo/b2-seal-waveq-stamped.svg"><div class="lvl"><b>3</b> · İçini biliyor</div></div></div><div class="col night C"><div class="label">Ay ışıklı gece (koyu tema)</div><img class="logo" src="../logo/a2-wave-fraunces600-dark.svg">
+<h1>Projende kullandın. Peki altında ne olduğunu anlatabilir misin?</h1>
+<p class="lead">Spring ve JPA'da hangi seviyede olduğunu ve neyi çalışman gerektiğini gerçek senaryolu sorularla gösterir.</p>
+<div class="card"><div class="badges"><span class="lv">Seviye 3</span><span>Persistence context</span></div>
+<p class="q">Güncellemeden sonra <code>stock</code> ve <code>created_at</code> sütunları <code>null</code> oluyor. Sebep ve doğru düzeltme hangisi?</p>
+<pre>Product product = new Product();
+product.setId(request.id());
+product.setName(request.name());
+productRepository.save(product);</pre>
+<div class="opt sel"><i></i><span>Id dolu olduğu için <code>save()</code> merge yapar: boş alanlar da kayda kopyalanır.</span></div>
+<div class="opt"><i></i><span>Hibernate eski satırı silip aynı id ile yeni satır ekler.</span></div>
+<span class="btn">Devam</span></div>
+<div class="result"><img class="stamp" src="../logo/b2-seal-waveq-stamped.svg"><div class="lvl"><b>3</b> · İçini biliyor</div></div></div></div>
+
+</body></html>

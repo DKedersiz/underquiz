@@ -13,14 +13,14 @@ export default async function Home() {
   return (
     <div className="space-y-16">
       <section>
-        <p className="text-sm font-medium text-accent">{t.eyebrow}</p>
+        <p className="font-sans text-xs font-semibold tracking-[0.08em] text-accent uppercase">{t.eyebrow}</p>
         <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-balance sm:text-4xl">
           {t.title}
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{t.lead}</p>
         <ul className="mt-5 flex flex-wrap gap-2 text-sm">
           {t.facts.map((f) => (
-            <li key={f} className="rounded-full border border-line bg-surface px-3 py-1 text-muted">
+            <li key={f} className="rounded-full border border-line bg-surface px-3 py-1 font-sans text-muted">
               {f}
             </li>
           ))}
@@ -37,7 +37,7 @@ export default async function Home() {
               className="group rounded-xl border border-line bg-surface p-5 transition hover:border-accent hover:shadow-sm"
             >
               <div className="flex items-baseline justify-between gap-3">
-                <h3 className="text-lg font-semibold">{topic.title}</h3>
+                <h3 className="font-display text-xl font-semibold">{topic.title}</h3>
                 <span className="text-sm text-muted">
                   {t.minutes(minutesFor(topic.questionCount, topic.openCount))}
                 </span>
@@ -56,8 +56,8 @@ export default async function Home() {
         <ol className="mt-4 grid gap-3 sm:grid-cols-3">
           {t.steps.map((s, i) => (
             <li key={s.title} className="rounded-xl border border-line bg-surface p-5">
-              <span className="text-sm font-semibold text-accent">{i + 1}</span>
-              <h3 className="mt-1 font-semibold">{s.title}</h3>
+              <span className="font-display text-lg font-semibold text-accent">{i + 1}</span>
+              <h3 className="mt-1 font-display text-lg font-semibold">{s.title}</h3>
               <p className="mt-1 text-sm leading-relaxed text-muted">{s.body}</p>
             </li>
           ))}

@@ -54,10 +54,10 @@ export function ReviewStep({ question: q, position, text, met, saved, isLast, on
             <label
               key={r.id}
               className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${
-                on ? "border-accent bg-accent-soft" : "border-line bg-surface"
+                on ? "border-ink bg-ink/5" : "border-line bg-surface"
               } ${saved ? "cursor-default" : "hover:border-muted"}`}
             >
-              <input type="checkbox" checked={on} onChange={() => toggle(r.id)} className="mt-1 size-4 accent-[var(--accent)]" />
+              <input type="checkbox" checked={on} onChange={() => toggle(r.id)} className="mt-1 size-4 accent-[var(--ink)]" />
               <span className="leading-relaxed">
                 <Html html={r.html} inline />
                 {r.required && (

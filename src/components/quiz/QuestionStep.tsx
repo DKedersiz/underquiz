@@ -58,7 +58,7 @@ export function QuestionStep({ question: q, subtopicTitle, optionOrder, answer, 
             maxLength={MAX_OPEN_CHARS}
             rows={10}
             placeholder={t.openPlaceholder}
-            className="w-full resize-y rounded-xl border border-line bg-surface p-4 leading-relaxed outline-none transition focus:border-accent focus:ring-2 focus:ring-accent-soft"
+            className="w-full resize-y rounded-xl border border-line bg-surface p-4 leading-relaxed outline-none transition focus:border-ink focus:ring-2 focus:ring-ink/10"
           />
           <div className="mt-1 flex justify-between text-sm text-muted">
             <span>{q.answerHint ? t.hint[q.answerHint] : ""}</span>
@@ -92,12 +92,12 @@ function Choice({ selected, onSelect, subtle, children }: { selected: boolean; o
       aria-checked={selected}
       onClick={onSelect}
       className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left leading-relaxed transition ${
-        selected ? "border-accent bg-accent-soft" : "border-line bg-surface hover:border-muted"
+        selected ? "border-ink bg-ink/5" : "border-line bg-surface hover:border-muted"
       } ${subtle && !selected ? "text-muted" : ""}`}
     >
       <span
         aria-hidden
-        className={`mt-1 size-4 shrink-0 rounded-full border-2 ${selected ? "border-accent bg-accent shadow-[inset_0_0_0_2px_var(--surface)]" : "border-line"}`}
+        className={`mt-1 size-4 shrink-0 rounded-full border-2 ${selected ? "border-ink bg-ink shadow-[inset_0_0_0_2px_var(--surface)]" : "border-line"}`}
       />
       <span>{children}</span>
     </button>

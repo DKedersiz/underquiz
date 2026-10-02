@@ -20,9 +20,22 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
     <div className="space-y-12">
       <section>
         <h1 className="text-xl font-semibold tracking-tight">{t.title(topic.title)}</h1>
-        <Card className="mt-4 p-6">
-          <p className="text-sm font-medium text-muted">{t.yourLevel}</p>
-          <p className="mt-1 text-4xl font-semibold tracking-tight">
+        <Card className="relative mt-4 overflow-hidden p-6">
+          {result.level > 0 && (
+            // The stamped seal has see-through ink gaps, so it is only used on paper; night gets the clean seal.
+            <picture>
+              <source srcSet="/brand/seal.svg" media="(prefers-color-scheme: dark)" />
+              <img
+                src="/brand/seal-stamped.svg"
+                alt=""
+                width={96}
+                height={96}
+                className="pointer-events-none absolute top-5 right-5 size-20 rotate-[-8deg] opacity-90 sm:size-24"
+              />
+            </picture>
+          )}
+          <p className="font-sans text-sm font-medium text-muted">{t.yourLevel}</p>
+          <p className="mt-1 pr-24 font-display text-4xl font-semibold tracking-tight sm:pr-28">
             {result.level > 0 && <span className="text-accent">{result.level} · </span>}
             {tr.levelNames[result.level]}
           </p>

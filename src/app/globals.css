@@ -1,40 +1,44 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f8f7f4;
-  --surface: #ffffff;
-  --surface-2: #f1efea;
-  --ink: #1d1c1a;
-  --muted: #69655e;
-  --line: #e4e0d8;
-  --accent: #3446c4;
-  --accent-ink: #ffffff;
-  --accent-soft: #e8ebfb;
-  --good: #1f7a4d;
-  --good-soft: #e3f3ea;
-  --warn: #9a5b00;
-  --warn-soft: #fbf0dc;
-  --bad: #b3261e;
-  --bad-soft: #fbe7e5;
+  /* "Eski kâğıt": cream paper, indigo ink, vermilion seal */
+  --bg: #f3ebdc;
+  --surface: #fbf7ee;
+  --surface-2: #efe6d3;
+  --ink: #1e3557;
+  --muted: #5f6b7d;
+  --line: #e0d3ba;
+  --accent: #b04524;
+  --accent-ink: #fbf7ee;
+  --accent-soft: #f4e0d3;
+  --good: #3f6b4f;
+  --good-soft: #e1eadb;
+  --warn: #8a5a12;
+  --warn-soft: #f3e4c4;
+  --bad: #9b2c2c;
+  --bad-soft: #f4dcd5;
+  --grain: radial-gradient(rgba(120, 90, 40, 0.06) 1px, transparent 1px);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121211;
-    --surface: #1b1a19;
-    --surface-2: #232220;
-    --ink: #ecebe8;
-    --muted: #a39f97;
-    --line: #2f2d2a;
-    --accent: #8f9dff;
-    --accent-ink: #11131f;
-    --accent-soft: #23284a;
-    --good: #6fd29c;
-    --good-soft: #17301f;
-    --warn: #f0b85a;
-    --warn-soft: #33270f;
-    --bad: #ff8a80;
-    --bad-soft: #3a1c1a;
+    /* "Ay ışıklı gece": deep indigo night, moon-cream text */
+    --bg: #131e33;
+    --surface: #1a2741;
+    --surface-2: #16223a;
+    --ink: #ece2cc;
+    --muted: #a3abbb;
+    --line: #2b3b5a;
+    --accent: #e2774f;
+    --accent-ink: #131e33;
+    --accent-soft: #3a2a2a;
+    --good: #8fc29e;
+    --good-soft: #1f3a2e;
+    --warn: #e0b061;
+    --warn-soft: #3a2f17;
+    --bad: #f08a7a;
+    --bad-soft: #3d1e22;
+    --grain: none;
   }
 }
 
@@ -55,12 +59,23 @@
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
   --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-source-serif);
+  --font-display: var(--font-fraunces);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: var(--grain);
+  background-size: 3px 3px;
   color: var(--ink);
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 /* Rendered Markdown from content files */
@@ -101,15 +116,14 @@ body {
   padding: 0.9rem 1rem;
   overflow-x: auto;
 }
-.shiki,
+.md pre.shiki {
+  background-color: var(--surface-2);
+}
 .shiki span {
   color: var(--shiki-light);
-  background-color: var(--shiki-light-bg);
 }
 @media (prefers-color-scheme: dark) {
-  .shiki,
   .shiki span {
     color: var(--shiki-dark);
-    background-color: var(--shiki-dark-bg);
   }
 }
