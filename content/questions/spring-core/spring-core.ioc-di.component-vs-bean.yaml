@@ -1,0 +1,29 @@
+id: spring-core.ioc-di.component-vs-bean
+version: 2
+topic: spring-core
+subtopic: ioc-di
+level: 2
+type: mc
+prompt:
+  tr: |
+    Projeye bir ödeme kütüphanesi ekledin. Kütüphanedeki `PaymentGatewayClient` sınıfında hiçbir Spring
+    anotasyonu yok ve nesne bir API anahtarıyla oluşturuluyor: `new PaymentGatewayClient(apiKey)`.
+    Birkaç servis bu nesneyi constructor ile almak istiyor. Ne yaparsın?
+options:
+  - id: a
+    text: "Bir `@Configuration` sınıfında, `apiKey`'i ayarlardan alan ve `new PaymentGatewayClient(apiKey)` döndüren bir `@Bean` metodu yazmak."
+    correct: true
+  - id: b
+    text: "Kütüphanenin paketini `@ComponentScan`'e eklemek; Spring o paketteki sınıfları bulup bean olarak kaydeder."
+    misconception: { tr: "Component scan'in anotasyonsuz sınıfları da bean yaptığını sanıyor. Scan yalnız `@Component` ailesiyle işaretli sınıfları kaydeder; bu sınıf atlanır ve enjeksiyon 'bean bulunamadı' hatası verir." }
+  - id: c
+    text: "Servislerde constructor parametresi olarak `PaymentGatewayClient` istemek yeter; Spring gereken nesneyi kendisi oluşturur."
+    misconception: { tr: "Spring'in enjekte edilen her tipi kendiliğinden oluşturduğunu sanıyor. Container yalnız tanımlı bean'leri enjekte eder; tanım yoksa uygulama açılmaz." }
+  - id: d
+    text: "Her serviste `new PaymentGatewayClient(apiKey)` ile kendi nesnesini oluşturmak; kütüphane sınıfları bean yapılamaz."
+    misconception: { tr: "Kaynağına dokunamadığın sınıfların bean olamayacağını sanıyor. `@Bean` metodu tam bunun içindir. Elle oluşturmak her serviste ayrı nesne ve ayar tekrarı demektir, testte de değiştirilemez." }
+explanation:
+  tr: "`@Component` sınıfın kendi koduna yazılır; kodunu değiştiremediğin ya da oluşturulması ayar isteyen nesneler için `@Bean` metodu kullanılır. Metot nesneyi senin kodunla oluşturur, container onu bean olarak kaydeder ve isteyen her yere enjekte eder."
+resources: [spring-docs-beans, spring-docs-classpath-scanning]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

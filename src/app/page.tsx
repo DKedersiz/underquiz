@@ -1,69 +1,84 @@
-import Image from "next/image";
+import Link from "next/link";
+import { loadTopicSummaries } from "@/lib/content/load";
+import { tr } from "@/messages/tr";
 
-export default function Home() {
+// Rough pace: ~40 s per multiple choice, ~4 min per open question.
+const minutesFor = (questions: number, open: number) =>
+  Math.max(5, Math.round(((questions - open) * 40 + open * 240) / 60 / 5) * 5);
+
+export default async function Home() {
+  const topics = await loadTopicSummaries();
+  const t = tr.home;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="space-y-16">
+      <section>
+        <p className="text-sm font-medium text-accent">{t.eyebrow}</p>
+        <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-balance sm:text-4xl">
+          {t.title}
+        </h1>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{t.lead}</p>
+        <ul className="mt-5 flex flex-wrap gap-2 text-sm">
+          {t.facts.map((f) => (
+            <li key={f} className="rounded-full border border-line bg-surface px-3 py-1 text-muted">
+              {f}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold">{t.topicsTitle}</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {topics.map((topic) => (
+            <Link
+              key={topic.id}
+              href={`/olcum/${topic.id}`}
+              className="group rounded-xl border border-line bg-surface p-5 transition hover:border-accent hover:shadow-sm"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-lg font-semibold">{topic.title}</h3>
+                <span className="text-sm text-muted">
+                  {t.minutes(minutesFor(topic.questionCount, topic.openCount))}
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-muted">{t.questionCount(topic.questionCount, topic.openCount)}</p>
+              <p className="mt-4 text-sm font-medium text-accent">
+                {t.start} <span className="inline-block transition group-hover:translate-x-0.5">→</span>
+              </p>
+            </Link>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold">{t.howTitle}</h2>
+        <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+          {t.steps.map((s, i) => (
+            <li key={s.title} className="rounded-xl border border-line bg-surface p-5">
+              <span className="text-sm font-semibold text-accent">{i + 1}</span>
+              <h3 className="mt-1 font-semibold">{s.title}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted">{s.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold">{t.scaleTitle}</h2>
+        <dl className="mt-4 divide-y divide-line rounded-xl border border-line bg-surface">
+          {([1, 2, 3, 4] as const).map((l) => (
+            <div key={l} className="flex gap-4 px-5 py-3">
+              <dt className="w-40 shrink-0 font-medium">
+                <span className="text-muted">{l} · </span>
+                {tr.levelNames[l]}
+              </dt>
+              <dd className="text-muted">{tr.levelMeaning[l]}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-2 text-sm text-muted">{t.scaleNote}</p>
+      </section>
     </div>
   );
 }

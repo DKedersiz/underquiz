@@ -1,0 +1,59 @@
+id: jpa-transaction.persistence-context.dirty-checking
+version: 1
+topic: jpa-transaction
+subtopic: persistence-context
+level: 3
+type: mc
+tags: [dirty-checking, transactional]
+prompt:
+  tr: |
+    Ürün sayfasına "indirimli fiyatı önizle" özelliği eklendi. Önizleme yalnızca hesaplanıp
+    gösterilecek, kaydedilmeyecekti. Ama testte önizlemesi açılan ürünlerin fiyatı veritabanında da
+    değişiyor. Kodda hiçbir `save()` çağrısı yok.
+
+    ```java
+    @Service
+    public class PricingService {
+        private final ProductRepository productRepository;
+
+        public PricingService(ProductRepository productRepository) {
+            this.productRepository = productRepository;
+        }
+
+        @Transactional
+        public PricePreview previewDiscount(Long productId, BigDecimal rate) {
+            Product product = productRepository.findById(productId).orElseThrow();
+            product.setPrice(product.getPrice().multiply(BigDecimal.ONE.subtract(rate)));
+            return new PricePreview(product.getId(), product.getPrice());
+        }
+    }
+    ```
+
+    Fiyat neden veritabanında değişiyor?
+options:
+  - id: a
+    text: "`product` persistence context'te managed durumda. Commit öncesindeki flush'ta Hibernate onu yüklendiği andaki hâliyle karşılaştırır ve fark bulduğu için UPDATE çalıştırır."
+    correct: true
+  - id: b
+    text: "Hibernate managed entity'lerin setter'larını izler: `setPrice()` çağrıldığı anda UPDATE SQL'ini veritabanına gönderir. Her setter çağrısı ayrı bir SQL komutuna karşılık gelir."
+    misconception: { tr: "Değişikliklerin setter çağrıldığı anda SQL'e dönüştüğünü sanıyor. Hibernate değişiklikleri bellekte biriktirir ve flush sırasında (en geç commit öncesinde) entity başına bir UPDATE üretir." }
+  - id: c
+    text: "`spring.jpa.hibernate.ddl-auto=update` açık olduğu için Hibernate entity'deki değişiklikleri tabloya yansıtıyor. Bu ayar `none` veya `validate` olsaydı fiyat değişmezdi."
+    misconception: { tr: "`ddl-auto`'yu veri güncellemesiyle karıştırıyor. Bu ayar yalnızca şemayı (tablo ve sütunları) oluşturur, günceller veya doğrular; satırlardaki veriye dokunmaz." }
+  - id: d
+    text: "`@Transactional` metot içinde değiştirilen nesneleri kendisi kaydeder: Spring metot bitince değişen her entity için arka planda `repository.save()` çağırır."
+    misconception: { tr: "Değişikliği Spring'in gizli bir `save()` çağrısına bağlıyor. Spring'in transaction yönetimi entity'leri izlemez, yalnızca transaction'ı başlatıp commit eder. Değişikliği bulan, commit öncesindeki flush'ta Hibernate'in persistence context'idir." }
+explanation:
+  tr: |
+    Bir transaction içinde `findById` veya sorguyla yüklenen entity'ler persistence context'te managed
+    durumdadır. Hibernate her birinin yüklendiği andaki hâlini saklar ve flush sırasında (varsayılan
+    olarak commit'ten önce) mevcut değerlerle karşılaştırır; fark varsa UPDATE üretir. Buna dirty
+    checking denir ve managed bir entity'yi güncellemek için `save()` çağırmak gerekmez. Düzeltme:
+    önizleme için managed entity'yi değiştirmemek, hesabı yerel bir değişkende yapmak
+    (`BigDecimal discounted = product.getPrice().multiply(...)`). Metodu `@Transactional(readOnly = true)`
+    yapmak ek bir güvencedir: Spring, Hibernate ile read-only transaction'da session'ın flush modunu
+    `MANUAL` yapar ve değişiklik yazılmaz. Ama asıl düzeltme, kaydedilmeyecek bir hesap için managed
+    entity'yi değiştirmemektir.
+resources: [hibernate-user-guide, jakarta-persistence-spec, spring-docs-transactions]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

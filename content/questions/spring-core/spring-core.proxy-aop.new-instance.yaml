@@ -1,0 +1,57 @@
+id: spring-core.proxy-aop.new-instance
+version: 1
+topic: spring-core
+subtopic: proxy-aop
+level: 4
+type: mc
+tags: [cacheable, proxy]
+prompt:
+  tr: |
+    Projede `@EnableCaching` açık ve diğer servislerdeki `@Cacheable` metotlar sorunsuz çalışıyor.
+    Aşağıdaki kodda ise `getRate()` her çağrıda dış API'ye gidiyor; cache hiç kullanılmıyor.
+
+    ```java
+    @Service
+    public class PriceService {
+        private final ExchangeRateClient rateClient = new ExchangeRateClient();
+
+        public BigDecimal priceInTry(BigDecimal usd) {
+            return usd.multiply(rateClient.getRate("USD", "TRY"));
+        }
+    }
+
+    public class ExchangeRateClient {
+        @Cacheable("rates")
+        public BigDecimal getRate(String from, String to) {
+            return fetchFromApi(from, to); // yavaş bir HTTP çağrısı
+        }
+
+        private BigDecimal fetchFromApi(String from, String to) { /* ... */ return BigDecimal.ONE; }
+    }
+    ```
+
+    Sorunun sebebi ve doğru düzeltme hangisi?
+options:
+  - id: a
+    text: "`ExchangeRateClient` `new` ile oluşturulduğu için Spring bean'i değil ve proxy'lenmiyor; sınıfı bean yapıp `PriceService`'e constructor ile enjekte etmek gerekir."
+    correct: true
+  - id: b
+    text: "İki parametreli metotlarda Spring cache anahtarı üretemez; `@Cacheable(value = \"rates\", key = \"#from + '-' + #to\")` gibi anahtarı açıkça yazmak gerekir."
+    misconception: { tr: "Varsayılan anahtar üretiminin birden fazla parametrede çalışmadığını sanıyor. Spring bu durumda tüm parametreleri içeren bir `SimpleKey` üretir; anahtarı elle yazmak isteğe bağlıdır." }
+  - id: c
+    text: "`PriceService` singleton olduğu için `rateClient` tüm isteklerce paylaşılıyor ve paylaşılan nesnede cache devre dışı kalıyor; `ExchangeRateClient` prototype olmalı."
+    misconception: { tr: "Cache davranışını scope ile karıştırıyor. Cache'in çalışması, nesnenin kaç istekçe paylaşıldığına değil, çağrının Spring proxy'sinden geçip geçmediğine bağlıdır." }
+  - id: d
+    text: "Varsayılan bellek içi cache `BigDecimal` gibi değerleri saklayamaz; Caffeine veya Redis gibi ayrı bir cache sağlayıcısı eklemek gerekir."
+    misconception: { tr: "Sorunu cache altyapısına bağlıyor. Diğer servislerde cache çalıştığına göre altyapı sağlam; varsayılan bellek içi sağlayıcı her türlü nesneyi saklayabilir." }
+explanation:
+  tr: |
+    `@Cacheable`, `@Transactional`, `@Async` gibi anotasyonlar, Spring'in bean'in etrafına koyduğu
+    proxy ile çalışır. `new` ile oluşturulan nesne container'dan geçmez: ne bağımlılıkları enjekte
+    edilir ne de proxy'lenir, bu yüzden anotasyonlar hata vermeden etkisiz kalır. Düzeltme:
+    `ExchangeRateClient`'ı `@Component` yapıp `PriceService`'e constructor ile enjekte etmek. Sınıfa
+    yalnızca `@Component` eklemek yetmez; `PriceService` onu hâlâ `new` ile oluşturuyorsa cache yine
+    çalışmaz.
+resources: [spring-docs-aop]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

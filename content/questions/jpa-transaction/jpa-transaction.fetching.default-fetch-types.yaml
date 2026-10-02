@@ -1,0 +1,45 @@
+id: jpa-transaction.fetching.default-fetch-types
+version: 1
+topic: jpa-transaction
+subtopic: fetching
+level: 2
+type: mc
+tags: [fetch-type, lazy-loading, relationships]
+prompt:
+  tr: |
+    İlişkilerde `fetch` belirtilmemiş:
+
+    ```java
+    @Entity
+    public class Product {
+        @Id @GeneratedValue
+        private Long id;
+
+        @ManyToOne
+        private Category category;
+
+        @OneToMany(mappedBy = "product")
+        private List<Review> reviews = new ArrayList<>();
+    }
+    ```
+
+    `@Transactional` bir servis metodunda `productRepository.findById(id)` ile bir ürün yükleniyor.
+    `category` ve `reviews` için varsayılan davranış nedir?
+options:
+  - id: a
+    text: "İkisi de ürünle birlikte hemen yüklenir; JPA bir entity'yi her zaman tüm ilişkileriyle getirir."
+    misconception: { tr: "Tüm ilişkilerin eager olduğunu sanıyor. Koleksiyon ilişkileri (`@OneToMany`, `@ManyToMany`) varsayılan olarak lazy'dir; her ürünle birlikte bütün yorumları okumak çoğu zaman gereksiz veri demektir." }
+  - id: b
+    text: "İkisi de lazy'dir; JPA'da bütün ilişkiler varsayılan olarak ancak erişildiklerinde yüklenir."
+    misconception: { tr: "Tüm ilişkilerin varsayılan olarak lazy olduğunu sanıyor. JPA'da `@ManyToOne` ve `@OneToOne` varsayılan olarak eager'dır. Hibernate ilişkileri lazy yapmayı önerse de bunun için `fetch = FetchType.LAZY` açıkça yazılmalıdır." }
+  - id: c
+    text: "`category` ürünle birlikte hemen yüklenir; `reviews` ise koleksiyona ilk erişildiğinde ayrıca yüklenir."
+    correct: true
+  - id: d
+    text: "Hiçbiri yüklenmez; ilişkili verileri ayrı repository çağrılarıyla kendin getirmen gerekir."
+    misconception: { tr: "JPA'nın ilişkiler üzerinden gezmeyi desteklemediğini sanıyor. İlişki alanları eşlendiği için `product.getCategory()` veya `product.getReviews()` ile ilişkili veriye ulaşılır; değişen yalnızca bu verinin ne zaman yüklendiğidir." }
+explanation:
+  tr: "JPA'nın varsayılanları: tek nesneye giden ilişkiler (`@ManyToOne`, `@OneToOne`) EAGER, koleksiyonlar (`@OneToMany`, `@ManyToMany`) LAZY. EAGER ilişki, gerekmese bile her seferinde yüklenir ve Hibernate'te sorgu bazında kapatılamaz. Bu yüzden Hibernate dokümanı tüm ilişkileri lazy işaretleyip (`@ManyToOne(fetch = FetchType.LAZY)`) gerektiğinde sorguda birlikte getirmeyi önerir; birçok projede bu bir kodlama kuralıdır."
+resources: [jakarta-persistence-spec, hibernate-user-guide]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

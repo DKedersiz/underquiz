@@ -1,0 +1,55 @@
+id: spring-core.bean-scope.singleton-state
+version: 1
+topic: spring-core
+subtopic: bean-scope-lifecycle
+level: 4
+type: open
+tags: [concurrency]
+answerHint: medium
+prompt:
+  tr: |
+    Bir takım arkadaşın aşağıdaki servisi yazmış. Test ortamında sorun yok, ama canlıda bazı
+    kullanıcılar başka bir kullanıcının indirim tutarını görüyor.
+
+    ```java
+    @Service
+    public class CheckoutService {
+        private BigDecimal discount;
+
+        public Receipt checkout(Cart cart, User user) {
+            discount = discountCalculator.calculate(user);
+            // ... birkaç işlem daha
+            return receiptBuilder.build(cart, discount);
+        }
+    }
+    ```
+
+    Sorunun sebebi ne? Nasıl düzeltirsin? Aklına gelen alternatif çözümlerden hangisini neden seçersin?
+rubric:
+  - { id: r1, weight: 2, required: true, point: { tr: "Bean varsayılan olarak singleton'dır; tüm istekler aynı instance'ı ve aynı `discount` alanını paylaşır." } }
+  - { id: r2, weight: 2, required: true, point: { tr: "Eşzamanlı isteklerde race condition oluşur: bir isteğin yazdığı değeri diğeri ezer veya okur. Test ortamında tek kullanıcı olduğu için görünmez." } }
+  - { id: r3, weight: 2, required: true, point: { tr: "Doğru çözüm: alanı kaldırıp yerel değişken kullanmak, yani servisi stateless tasarlamak." } }
+  - { id: r4, weight: 1, point: { tr: "Alternatifleri tartar: synchronized darboğaz yaratır; prototype/request scope gereksiz karmaşıklık getirir ve sorunun kökünü çözmez; ThreadLocal temizlenmezse thread pool'da veri sızıntısı yapar." } }
+misconceptions:
+  - { id: m1, text: { tr: "Spring'in her istek için yeni bir servis nesnesi oluşturduğunu söyler." } }
+  - { id: m2, text: { tr: "Sorunu veritabanı transaction'ına veya cache'e bağlar." } }
+  - { id: m3, text: { tr: "Ana çözüm olarak metodu synchronized yapmayı önerir ve bedelini tartışmaz." } }
+pass: { minScore: 6.5, requireAll: [r1, r2, r3] }   # seviye 4: çözümün yanında en az kısmi bir trade-off tartışması gerekir
+followUps:
+  - ifMissing: r4
+    prompt: { tr: "Metodu synchronized yapmak da bu sorunu çözer. Neden bunu tercih etmezsin?" }
+modelAnswer:
+  tr: |
+    Spring bean'leri varsayılan olarak singleton'dır, yani tüm istekler aynı `CheckoutService`
+    nesnesini ve aynı `discount` alanını paylaşır. Eşzamanlı iki istekte biri `discount`'u yazdıktan
+    sonra diğeri üzerine yazabilir; ilk istek artık başkasının değerini kullanır (race condition).
+    Testte tek kullanıcı olduğu için görünmez. Doğru çözüm, durumu alanda tutmamak: `discount`'u
+    metot içinde yerel değişken yapmak ve servisi stateless tasarlamak. `synchronized` doğru sonuç
+    verir ama o uygulama instance'ındaki tüm checkout isteklerini sıraya sokar (birden fazla sunucu varsa
+    sunucular arasında koruma da sağlamaz); request/prototype scope çalışır ama gereksiz
+    karmaşıklık getirir; ThreadLocal, thread pool'da temizlenmezse bir isteğin verisini sonrakine taşır.
+explanation:
+  tr: "Singleton bean'ler paylaşılır; değişken durum (mutable state) tutmamaları gerekir. Bu, mülakatlarda en sık sorulan Spring ve concurrency kesişimidir."
+resources: [spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

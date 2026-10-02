@@ -1,0 +1,26 @@
+id: spring-core.ioc-di.constructor-injection
+version: 1
+topic: spring-core
+subtopic: ioc-di
+level: 2
+type: mc
+prompt:
+  tr: "Constructor injection'ın field injection'a (`@Autowired` alan üzerinde) tercih edilmesinin asıl sebebi nedir?"
+options:
+  - id: a
+    text: "Bağımlılıklar `final` olabilir, zorunlu olanlar açıkça görünür ve sınıf Spring olmadan testte kolayca oluşturulur."
+    correct: true
+  - id: b
+    text: "Constructor injection çalışma zamanında daha hızlıdır, çünkü Spring bağımlılıkları reflection kullanmadan verir."
+    misconception: { tr: "Tercihin performansla ilgili olduğunu sanıyor. Fark tasarım ve test edilebilirlikte." }
+  - id: c
+    text: "Field injection Spring Boot 3 ile kaldırıldı; yeni projelerde `@Autowired` alanlar derleme hatası verir."
+    misconception: { tr: "Field injection hâlâ çalışır; tavsiye edilmemesi kaldırıldığı anlamına gelmez." }
+  - id: d
+    text: "Constructor injection döngüsel bağımlılıkları (circular dependency) otomatik çözer, bu yüzden daha güvenlidir."
+    misconception: { tr: "Tersine, constructor injection'da döngüsel bağımlılık uygulama açılırken hata verir. Bu da tasarım sorununu erken gösterir." }
+explanation:
+  tr: "Constructor injection değişmezlik, açık bağımlılıklar ve kolay test sağlar; ayrıca döngüsel bağımlılıkları erken yakalar."
+resources: [spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

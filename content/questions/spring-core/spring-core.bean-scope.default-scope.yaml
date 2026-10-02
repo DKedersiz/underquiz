@@ -1,0 +1,26 @@
+id: spring-core.bean-scope.default-scope
+version: 1
+topic: spring-core
+subtopic: bean-scope-lifecycle
+level: 1
+type: mc
+prompt:
+  tr: "Spring'de bir bean için scope belirtilmezse varsayılan scope nedir ve ne anlama gelir?"
+options:
+  - id: a
+    text: "singleton: her Spring container'ında o bean'den tek bir instance olur."
+    correct: true
+  - id: b
+    text: "singleton: JVM içinde o sınıftan yalnızca tek bir nesne oluşturulabilir."
+    misconception: { tr: "Spring'in singleton scope'unu GoF Singleton tasarım kalıbıyla karıştırıyor. Aynı sınıftan farklı bean'ler veya farklı context'ler ayrı instance'lar oluşturabilir." }
+  - id: c
+    text: "prototype: bean her enjekte edildiğinde yeni bir instance oluşturulur."
+    misconception: { tr: "Varsayılan scope'u prototype sanıyor." }
+  - id: d
+    text: "request: her HTTP isteği için yeni bir instance oluşturulur."
+    misconception: { tr: "Web scope'larını varsayılan davranış sanıyor." }
+explanation:
+  tr: "Varsayılan scope singleton'dır, ama anlamı container başına tek instance'tır. Sınıf düzeyinde bir tekillik garantisi değildir."
+resources: [spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

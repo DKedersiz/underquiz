@@ -1,0 +1,56 @@
+id: spring-core.boot-autoconfig.startup-flow
+version: 2
+topic: spring-core
+subtopic: boot-autoconfig
+level: 3
+type: open
+tags: [startup, auto-configuration]
+answerHint: medium
+prompt:
+  tr: |
+    Ana sınıfın `com.shop.app.ShopApplication` (`@SpringBootApplication`). Ortak kodu `com.shop.common`
+    paketine taşıdın. `com.shop.common.AuditService` (`@Service`) sınıfını `OrderService`'e constructor ile
+    enjekte edince uygulama şu hatayla açılmıyor:
+
+    ```
+    Parameter 0 of constructor in com.shop.app.OrderService required a bean of type 'com.shop.common.AuditService' that could not be found.
+    ```
+
+    Oysa `DataSource` ve `EntityManagerFactory` bean'leri sorunsuz oluşuyor, üstelik onların sınıfları da
+    `com.shop.app` altında değil. Uygulama açılırken bean'ler nasıl bulunuyor; biri neden bulunuyor da
+    diğeri bulunmuyor? Nasıl düzeltirsin? (Kod yazman gerekmiyor.)
+rubric:
+  - { id: r1, weight: 2, required: true, point: { tr: "Teşhis ve mekanizma: component scan varsayılan olarak `@SpringBootApplication` sınıfının paketini ve alt paketlerini tarar. `com.shop.common` bunun dışında kaldığı için `AuditService` bean olmadı." } }
+  - { id: r2, weight: 2, required: true, point: { tr: "Auto-configuration component scan değildir: Boot'un auto-configuration sınıfları paketten bağımsız bir listeden yüklenir ve classpath'e, mevcut bean'lere bakarak koşullu bean ekler. `DataSource` bu yüzden paketten bağımsız oluşuyor." } }
+  - { id: r3, weight: 1, point: { tr: "Çözüm: ana sınıfı `com.shop` köküne taşımak, ya da `scanBasePackages = \"com.shop\"` / `@ComponentScan` ile taranacak paketi genişletmek, ya da sınıfı `@Import` / `@Bean` ile açıkça kaydetmek." } }
+  - { id: r4, weight: 1, point: { tr: "Seçimini gerekçelendirir: ana sınıfı köke taşımak en sade yoldur; taramayı çok genişletmek istenmeyen sınıfları (örn. başka modüllerin yapılandırmalarını) da bean yapabilir." } }
+misconceptions:
+  - { id: m1, text: { tr: "Component scan'in classpath'teki bütün paketleri taradığını söyler." } }
+  - { id: m2, text: { tr: "`DataSource`'un da component scan ile bulunduğunu, auto-configuration'ın paket taradığını söyler." } }
+pass: { minScore: 4, requireAll: [r1, r2] }
+followUps:
+  - ifMissing: r2
+    prompt: { tr: "`DataSource`'un sınıfı da `com.shop.app` altında değil. O zaman o bean nasıl oluşuyor?" }
+  - ifMissing: r3
+    prompt: { tr: "Paket yapısını bozmadan bu hatayı nasıl giderirdin?" }
+modelAnswer:
+  tr: |
+    `@SpringBootApplication` içindeki `@ComponentScan`, varsayılan olarak ana sınıfın paketini
+    (`com.shop.app`) ve alt paketlerini tarar. `com.shop.common` bunun dışında olduğu için
+    `AuditService` hiç bean olmadı; `OrderService` oluşturulurken bu tipte bir bean bulunamadı.
+
+    `DataSource` ve `EntityManagerFactory` ise component scan ile değil, auto-configuration ile gelir.
+    Boot, auto-configuration sınıflarını paketten bağımsız bir listeden yükler ve classpath'e (sürücü,
+    Hibernate) ve tanımlı bean'lere bakarak bu bean'leri koşullu olarak ekler. Bu yüzden paket
+    yapısından etkilenmezler.
+
+    Çözüm olarak ana sınıfı `com.shop` paketine taşırdım; böylece bütün alt paketler taranır ve ek
+    yapılandırma gerekmez. Alternatif olarak `scanBasePackages = "com.shop"` verilebilir ya da sınıf
+    `@Import` ile açıkça eklenebilir. Taramayı gereğinden geniş tutmak, istenmeyen sınıfların da bean
+    olmasına yol açabilir.
+explanation:
+  tr: "Spring Boot'ta bean'ler iki ayrı yoldan gelir. Senin sınıfların component scan ile bulunur ve scan ana sınıfın paketiyle alt paketlerine bakar; bu yüzden ana sınıfı paket hiyerarşisinin köküne koymak önerilir. Altyapı bean'leri (`DataSource`, `EntityManagerFactory`, `ObjectMapper` vb.) ise auto-configuration ile, paketten bağımsız ve koşullu olarak eklenir. Bu ayrım mülakatta 'Bir Spring Boot uygulaması açılırken neler olur?' diye de sorulur; iyi bir cevap, hangi bean'in hangi mekanizmayla geldiğini doğru yere koyar."
+revealsAnswerOf: [spring-core.autoconfig.datasource-conditions, spring-core.autoconfig.what-it-does]   # ikisinin doğru şıkkı r2'yi veriyor
+resources: [spring-boot-docs-code-structure, spring-boot-docs-autoconfig]
+source: { kind: adapted, ref: "internette paylaşılan Türkçe Java/Spring mülakat soruları listesi" }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

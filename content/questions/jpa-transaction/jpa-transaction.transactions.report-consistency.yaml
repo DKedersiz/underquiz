@@ -1,0 +1,61 @@
+id: jpa-transaction.transactions.report-consistency
+version: 3
+topic: jpa-transaction
+subtopic: transactions
+level: 4
+type: mc
+tags: [transactional, isolation, phantom-read]
+prompt:
+  tr: |
+    Veritabanı READ COMMITTED isolation seviyesinde çalışıyor; metotta ayrıca bir isolation
+    belirtilmemiş. Gün içinde sürekli yeni sipariş gelirken çalışan günlük rapor bazen tutarsız
+    çıkıyor: listedeki siparişlerin tutarları toplandığında `total`'dan büyük bir sayı çıkıyor.
+
+    ```java
+    @Service
+    public class SalesReportService {
+        private final OrderRepository orderRepository;
+
+        public SalesReportService(OrderRepository orderRepository) {
+            this.orderRepository = orderRepository;
+        }
+
+        @Transactional(readOnly = true)
+        public DailyReport dailyReport(LocalDate day) {
+            BigDecimal total = orderRepository.sumAmountByDay(day); // SELECT SUM(amount) ...
+            List<Order> orders = orderRepository.findByDay(day);    // SELECT ... WHERE day = ?
+            return new DailyReport(total, orders);
+        }
+    }
+    ```
+
+    Tutarsızlığın sebebi ve uygun düzeltme hangisi?
+options:
+  - id: a
+    text: "READ COMMITTED'de her sorgu başladığı anda commit edilmiş veriyi görür; arada eklenen sipariş yalnız listeye girer. Toplamı okunan listeden hesaplamak iki değeri aynı veriye dayandırır."
+    correct: true
+  - id: b
+    text: "Sebep: `SUM` sorgusu satırları kilitlemediği için arada sipariş eklenebildi. Düzeltme: `findByDay`'i `@Lock(LockModeType.PESSIMISTIC_READ)` ile çalıştırıp okunan satırları kilitlemek."
+    misconception: { tr: "Satır kilidinin iki ayrı sorguyu tutarlı yaptığını sanıyor. Kilit ikinci sorguda ve yalnız o anda var olan satırlara konur; toplam zaten hesaplanmıştır ve iki sorgu arasında eklenen yeni satırı engellemez. Çözüm iki değeri aynı okumaya dayandırmaktır." }
+  - id: c
+    text: "Aynı transaction'daki sorgular normalde aynı anlık görüntüyü görür. Tutarsızlık, `readOnly = true` yüzünden her sorgunun ayrı bir transaction'da çalışmasından doğar; `readOnly` kaldırılmalı."
+    misconception: { tr: "Tek bir transaction'ın kendiliğinden tutarlı bir anlık görüntü sağladığını sanıyor. READ COMMITTED'de aynı transaction içindeki her sorgu o anda commit edilmiş veriyi görür. `readOnly` transaction'ı bölmez; altyapıya veri değiştirilmeyeceğini bildiren bir ipucudur." }
+  - id: d
+    text: "Hibernate toplam sorgusunun sonucunu first-level cache'ten döndürüyor, liste ise veritabanından geliyor. Sorgulardan önce `entityManager.clear()` çağırmak iki değeri aynı veriye dayandırır."
+    misconception: { tr: "First-level cache'in sorgu sonuçlarını sakladığını sanıyor. Persistence context entity'leri id'ye göre tutar; JPQL ve toplama (`SUM`) sorguları her çağrıda veritabanına gider. Sorun önbellek değil, iki sorgunun farklı anlarda commit edilmiş veriyi görmesi." }
+explanation:
+  tr: |
+    READ COMMITTED'de her sorgu, başladığı anda commit edilmiş veriyi görür; aynı transaction içindeki
+    iki ardışık `SELECT`, arada başka bir transaction commit ederse farklı veri görebilir. Burada iki
+    sorgu arasında yeni bir satır eklendiği için bu bir phantom read'dir. En sade ve her veritabanında
+    aynı çalışan düzeltme, iki değeri tek bir okumaya dayandırmaktır: toplamı okunan listeden hesaplamak
+    (ya da ikisini tek sorguda almak).
+
+    Isolation yükseltmek de bir seçenektir, ama davranışı veritabanına göre değişir. SQL standardında
+    REPEATABLE READ phantom read'e izin verir, bu yüzden standart garanti SERIALIZABLE'dadır.
+    PostgreSQL'in REPEATABLE READ'i phantom'ı da engeller. MySQL InnoDB'nin varsayılanı REPEATABLE READ
+    olduğu için düz `SELECT`'ler aynı transaction'da zaten aynı anlık görüntüyü okur. SERIALIZABLE ise
+    serialization hatası ve yeniden deneme yükü getirebilir.
+resources: [postgresql-transaction-isolation, spring-docs-transactions]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

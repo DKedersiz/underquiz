@@ -1,0 +1,59 @@
+id: jpa-transaction.entity-mapping.cascade-on-many-to-one
+version: 1
+topic: jpa-transaction
+subtopic: entity-mapping
+level: 4
+type: mc
+tags: [cascade, orphan-removal]
+prompt:
+  tr: |
+    Bir takım arkadaşın, yeni bir siparişle birlikte yeni müşterinin de otomatik kaydedilmesi için
+    `customer` ilişkisine `cascade = CascadeType.ALL` ekledi. `Customer` entity'sinde siparişlere dair
+    bir ilişki yok. Bir müşterinin birden fazla siparişi olabiliyor.
+
+    ```java
+    @Entity
+    @Table(name = "orders")
+    public class Order {
+        @Id @GeneratedValue
+        private Long id;
+
+        @ManyToOne(cascade = CascadeType.ALL)
+        private Customer customer;
+
+        @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<OrderItem> items = new ArrayList<>();
+    }
+    ```
+
+    İptal edilen siparişler `orderRepository.delete(order)` ile siliniyor. Bu mapping'le bir sipariş
+    silindiğinde ne olur?
+options:
+  - id: a
+    text: "Silme `customer`'a da yayılır ve Hibernate müşteriyi de silmeye çalışır. Müşterinin başka siparişi varsa foreign key ihlaliyle tüm işlem geri alınır; yoksa müşteri sessizce silinir."
+    correct: true
+  - id: b
+    text: "Yalnızca sipariş ve kalemleri silinir. Cascade her zaman parent'tan child'a, yani `@OneToMany` tarafından karşıya doğru çalışır; `@ManyToOne` üzerine yazılan cascade silmede dikkate alınmaz."
+    misconception: { tr: "Cascade yönünün ilişki türünden geldiğini sanıyor. Cascade, anotasyonun yazıldığı taraftan hedef entity'ye doğru uygulanır; `@ManyToOne` üzerindeki `REMOVE` siparişten müşteriye yayılır." }
+  - id: c
+    text: "Yalnızca sipariş ve kalemleri silinir. Silme bir ilişkiye ancak `orphanRemoval = true` ile yayılır; `customer` ilişkisinde bu ayar olmadığı için cascade yalnızca kaydetme işlemlerini taşır."
+    misconception: { tr: "Cascade REMOVE ile `orphanRemoval`'ı karıştırıyor. `CascadeType.ALL`, `REMOVE`'u da içerir. `orphanRemoval` ise child ilişkiden koparıldığında (koleksiyondan çıkarıldığında veya referans `null` yapıldığında) onu silen ayrı bir kuraldır." }
+  - id: d
+    text: "Sipariş, müşteri ve müşterinin diğer tüm siparişleri silinir. Cascade, silinen müşteriye foreign key ile bağlı kayıtları da bulup silerek veritabanını tutarlı bırakır."
+    misconception: { tr: "JPA cascade'ini veritabanındaki `ON DELETE CASCADE` gibi sanıyor. Cascade yalnızca mapping'de tanımlı ilişkileri izler; `Customer`'da siparişlere ilişki olmadığı için diğer siparişler silinmez, silme foreign key ihlaline takılır." }
+explanation:
+  tr: |
+    `CascadeType.ALL`; `PERSIST`, `MERGE`, `REMOVE`, `REFRESH` ve `DETACH`'i kapsar. Cascade,
+    anotasyonun yazıldığı entity'den ilişkinin hedefine yayılır; `@ManyToOne` üzerindeki `REMOVE`
+    siparişi silerken müşteriyi de siler ya da müşteri başka siparişlere bağlıysa foreign key hatasıyla
+    tüm transaction'ı geri aldırır. Jakarta Persistence spesifikasyonu `REMOVE` cascade'inin yalnızca
+    `@OneToOne` ve `@OneToMany` ilişkilerde kullanılmasını söyler ve diğerlerini taşınabilir saymaz;
+    Hibernate yine de uygular.
+
+    Cascade, yaşam döngüsü parent'a bağlı child'lar içindir: `Order → OrderItem` doğru örnektir.
+    Orada `orphanRemoval = true`, kalem listeden çıkarıldığında satırın da silinmesini sağlar. Müşteri
+    siparişten bağımsız yaşar; yeni müşteri önce kendi repository'siyle kaydedilmeli, `customer`
+    ilişkisinden cascade kaldırılmalıdır.
+resources: [jakarta-persistence-spec, hibernate-user-guide]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

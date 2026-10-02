@@ -1,0 +1,56 @@
+id: spring-core.ioc-di.multiple-candidates
+version: 1
+topic: spring-core
+subtopic: ioc-di
+level: 2
+type: mc
+prompt:
+  tr: |
+    Aşağıdaki kodda başka bir yapılandırma yok (`@Primary`, `@Qualifier` vb. kullanılmamış).
+
+    ```java
+    public interface NotificationSender {
+        void send(String to, String message);
+    }
+
+    @Component
+    public class EmailSender implements NotificationSender { /* ... */ }
+
+    @Component
+    public class SmsSender implements NotificationSender { /* ... */ }
+
+    @Service
+    public class OrderService {
+        private final NotificationSender sender;
+
+        public OrderService(NotificationSender sender) {
+            this.sender = sender;
+        }
+    }
+    ```
+
+    Uygulama başlatıldığında ne olur?
+options:
+  - id: a
+    text: "Spring bulduğu ilk bean'i (örneğin alfabetik sıraya göre `EmailSender`) enjekte eder ve uygulama açılır."
+    misconception: { tr: "Spring'in birden fazla aday arasından sessizce birini seçtiğini sanıyor. Spring belirsizliği tahminle çözmez; seçimi belirleyen açık bir ipucu yoksa hata verir." }
+  - id: b
+    text: "Uygulama açılmaz; `NotificationSender` için tek bir bean beklenirken iki aday bulunduğu için hata verir."
+    correct: true
+  - id: c
+    text: "Sonra tanımlanan `SmsSender` öncekini ezer ve `OrderService`'e o enjekte edilir."
+    misconception: { tr: "Aynı türdeki bean'lerin birbirini ezdiğini sanıyor. Bean'ler adlarıyla ayrı tutulur (`emailSender`, `smsSender`); ikisi de container'da bulunur." }
+  - id: d
+    text: "Spring ikisini saran bir proxy enjekte eder; `send()` çağrısı iki sender'a da iletilir."
+    misconception: { tr: "Birden fazla implementasyonun otomatik olarak birlikte çağrıldığını sanıyor. Hepsini kullanmak istiyorsan `List<NotificationSender>` enjekte edip kendin dolaşmalısın." }
+explanation:
+  tr: |
+    Tipe göre enjeksiyonda birden fazla aday varsa Spring hangisini seçeceğini bilemez ve başlatma
+    `NoUniqueBeanDefinitionException` kökenli bir hatayla durur. Çözümler: varsayılan olacak bean'i
+    `@Primary` ile işaretlemek, enjeksiyon noktasında `@Qualifier("smsSender")` ile seçmek ya da hepsine
+    ihtiyaç varsa `List<NotificationSender>` enjekte etmek. Not: parametre adı bean adlarından biriyle
+    aynı olsaydı (örneğin `emailSender`), Spring son çare olarak o bean'i seçerdi. Buna güvenmek yerine
+    seçimi açıkça belirtmek daha güvenlidir.
+resources: [spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

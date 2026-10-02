@@ -1,0 +1,84 @@
+id: jpa-transaction.transactions.concurrent-stock-update
+version: 2
+topic: jpa-transaction
+subtopic: transactions
+level: 4
+type: open
+tags: [transactional, concurrency, locking, isolation]
+answerHint: medium
+prompt:
+  tr: |
+    Transaction ve isolation ayarları varsayılan. Stok düşürme kodu şöyle:
+
+    ```java
+    @Service
+    public class StockService {
+        private final ProductRepository productRepository;
+
+        public StockService(ProductRepository productRepository) {
+            this.productRepository = productRepository;
+        }
+
+        @Transactional
+        public void reserve(Long productId, int quantity) {
+            Product product = productRepository.findById(productId).orElseThrow();
+            if (product.getStock() < quantity) {
+                throw new OutOfStockException(productId);
+            }
+            product.setStock(product.getStock() - quantity);
+        }
+    }
+    ```
+
+    Stokta 1 adet kalan bir üründen iki kullanıcı neredeyse aynı anda 1'er adet aldı. İki istek de
+    başarılı oldu, stok 0 görünüyor ama 2 ürün satıldı. Sebebi ne? Nasıl düzeltirsin? Aklına gelen
+    seçeneklerden hangisini neden seçersin?
+rubric:
+  - { id: r1, weight: 2, required: true, point: { tr: "Teşhis: iki transaction aynı stok değerini (1) okur, ikisi de kontrolü geçer, ikisi de 0 yazar; sonra yazan öncekinin güncellemesini ezer (lost update). `@Transactional` tek başına eşzamanlı okuma-kontrol-yazma desenini korumaz." } }
+  - { id: r2, weight: 2, required: true, point: { tr: "En az bir doğru çözüm önerir ve çakışmayı nasıl engellediğini söyler: `@Version` ile optimistic locking (ikinci commit eski versiyonla güncelleme yapamaz, `ObjectOptimisticLockingFailureException` alır), `PESSIMISTIC_WRITE` ile okuma (satır kilidi; ikinci istek bekler, sonra güncel stoğu okur) veya tek sorguda koşullu güncelleme (`UPDATE ... SET stock = stock - :q WHERE id = :id AND stock >= :q`, etkilenen satır sayısına bakmak)." } }
+  - { id: r3, weight: 2, point: { tr: "Seçimini çakışma sıklığına göre gerekçelendirir ve bedelleri tartar: optimistic kilit tutmaz ama çakışmada hata verir, işlem yeniden denenmeli veya kullanıcıya bildirilmeli, sık çakışmada çok retry olur; pessimistic doğru sıraya sokar ama istekler bekler, kilit transaction boyunca tutulur, transaction kısa tutulmalı ve deadlock riski vardır." } }
+  - { id: r4, weight: 1, point: { tr: "Isolation seviyesini yükseltmenin tek başına güvenilir bir çözüm olmadığını bilir: davranışı veritabanına göre değişir (bazısı çakışan güncellemeyi hatayla reddeder ve retry gerekir, bazısı bu deseni hiç engellemez); bu yüzden açık bir kilit, versiyon kontrolü veya koşullu güncelleme tercih edilir." } }
+misconceptions:
+  - { id: m1, text: { tr: "`@Transactional`'ın metodu eşzamanlı çağrılara karşı kilitlediğini veya bir satıra aynı anda yalnızca tek transaction'ın erişebildiğini söyler." } }
+  - { id: m2, text: { tr: "Ana çözüm olarak metodu `synchronized` yapmayı önerir ve birden fazla uygulama instance'ında işe yaramadığını tartışmaz." } }
+  - { id: m3, text: { tr: "Isolation seviyesini yükseltmeyi, bedelini ve veritabanına göre değişen davranışını tartışmadan tek çözüm olarak sunar." } }
+pass: { minScore: 5, requireAll: [r1, r2] }   # seviye 4: r1 + r2 = 4; en az kısmi r3 (seçim ve bedel) veya r4 (isolation'ın sınırı) gerekir
+followUps:
+  - ifMissing: r3
+    prompt: { tr: "`@Version` ile pessimistic lock arasında nasıl seçim yaparsın? Bir kampanya gününde aynı ürüne saniyede yüzlerce istek gelse seçimin değişir mi?" }
+  - ifMissing: r2
+    prompt: { tr: "Bu metodu, aynı ürünün stoğunu iki isteğin aynı anda düşürmesine karşı nasıl korursun?" }
+modelAnswer:
+  tr: |
+    İki istek stoğu aynı anda 1 olarak okur, ikisi de kontrolü geçer ve ikisi de 0 yazar; sonra yazan
+    öncekini ezer (lost update). `@Transactional` bunu tek başına engellemez.
+
+    Seçenekler:
+    - Optimistic locking: `Product`'a `@Version` alanı. Hibernate UPDATE'e versiyon koşulu ekler;
+      ikinci commit satırı güncelleyemez ve `ObjectOptimisticLockingFailureException` alır. Kilit
+      tutmaz, ama çakışmada işlem yeniden denenmeli ya da kullanıcıya bildirilmeli.
+    - Pessimistic lock: ürünü `@Lock(LockModeType.PESSIMISTIC_WRITE)` ile okumak (`SELECT ... FOR
+      UPDATE`). İkinci istek bekler, sonra güncel stoğu görür; retry gerekmez. Bedeli: istekler
+      sıraya girer, kilit transaction boyunca tutulur, deadlock riski var.
+    - Koşullu tek UPDATE: `stock = stock - :q WHERE id = :id AND stock >= :q`; 0 satır etkilendiyse
+      stok yok. Basit ve sağlam, ama iş kuralı SQL'e taşınır.
+    - Isolation yükseltmek: davranışı veritabanına göre değiştiği için ilk tercihim değil.
+
+    Seçimim: normal günde çakışma seyrek olduğu için `@Version` ve sınırlı retry. Kampanya gibi aynı
+    ürüne yoğun istek beklenen durumda pessimistic lock veya koşullu UPDATE.
+explanation:
+  tr: |
+    `@Transactional` işlemleri atomik yapar, ama eşzamanlı iki transaction'ın aynı değeri okuyup
+    üzerine yazmasını tek başına engellemez. Çözüm; çakışmayı sonradan fark edip reddetmek
+    (optimistic, `@Version`), baştan kilitlemek (pessimistic) ya da kontrol ile yazmayı tek atomik
+    sorguda birleştirmektir. Hangisinin seçileceği çakışmanın ne sıklıkla beklendiğine bağlıdır.
+
+    Isolation'ın etkisi veritabanına göre değişir. PostgreSQL'in varsayılanı READ COMMITTED'de ikinci
+    UPDATE birincinin commit'ini bekler, sonra üzerine yazar; REPEATABLE READ'de "could not serialize
+    access due to concurrent update" hatası verir, yine retry gerekir. MySQL InnoDB'nin varsayılanı
+    REPEATABLE READ bu deseni engellemez, çünkü UPDATE başka transaction'ların commit ettiği son satır
+    üzerinde çalışır. `synchronized` ise yalnız tek bir JVM'deki thread'leri sıraya sokar; ayrıca
+    kilit metot dönünce bırakılır, commit ise proxy'de daha sonra olur.
+resources: [hibernate-user-guide, spring-docs-transactions]   # önerilen ek: spring-data-jpa-locking, postgresql-transaction-isolation, mysql-innodb-isolation
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-28 }

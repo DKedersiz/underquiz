@@ -1,0 +1,55 @@
+id: spring-core.autoconfig.own-objectmapper-backoff
+version: 1
+topic: spring-core
+subtopic: boot-autoconfig
+level: 4
+type: mc
+tags: [auto-configuration, conditional, jackson]
+revealsAnswerOf: [spring-core.autoconfig.custom-objectmapper]   # aynı senaryo; doğru şık açık uçlunun r1–r3'ünü veriyor
+prompt:
+  tr: |
+    Bir Spring Boot 3 projesinde API'nin JSON alanlarını snake_case döndürmesi istendi. Bir takım arkadaşın şu sınıfı ekledi:
+
+    ```java
+    @Configuration
+    public class JacksonConfig {
+        @Bean
+        public ObjectMapper objectMapper() {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+            return mapper;
+        }
+    }
+    ```
+
+    Alanlar artık snake_case, ama iki yeni sorun çıktı: `application.yml`'daki
+    `spring.jackson.default-property-inclusion: non_null` ayarı etkisini yitirdi (null alanlar yine
+    JSON'da görünüyor) ve `LocalDateTime` alanı olan endpoint'ler 500 hatası veriyor.
+
+    İki sorunun ortak sebebi ve en uygun düzeltme hangisi?
+options:
+  - id: a
+    text: "Boot kendi `ObjectMapper`'ını yalnız context'te başka bir `ObjectMapper` yoksa kurar; `new` ile oluşan bu nesne Boot'un ayarlarını ve tarih modülünü almıyor. Düzeltme: sınıfı silip snake_case'i property ile vermek."
+    correct: true
+  - id: b
+    text: "Context'te artık iki `ObjectMapper` var ve Spring MVC yanıtları bazen Boot'unkiyle, bazen seninkiyle üretiyor. Düzeltme: `JacksonConfig`'teki bean'e `@Primary` ekleyip MVC'nin her zaman onu kullanmasını sağlamak."
+    misconception: { tr: "İki `ObjectMapper` oluştuğunu ve Spring'in aralarında seçim yaptığını sanıyor. Boot'unki `@ConditionalOnMissingBean` ile korunduğu için hiç oluşmaz; context'te tek mapper vardır, o da ayarsız olan. `@Primary` eklemek hiçbir şeyi değiştirmez." }
+  - id: c
+    text: "`@Configuration` sınıfları `application.yml` okunmadan önce işlendiği için `spring.jackson.*` ayarları bu nesneye uygulanamadı. Düzeltme: `JacksonConfig`'e `@DependsOn` ya da `@Order` ekleyip ayarlardan sonra yüklenmesini sağlamak."
+    misconception: { tr: "Sorunu yükleme sırasına bağlıyor. Property'ler bean'ler oluşturulmadan önce `Environment`'a yüklenir. Ayarlar sıradan dolayı değil, `new ObjectMapper()` Boot'un ayarları uygulayan builder'ından geçmediği için uygulanmıyor." }
+  - id: d
+    text: "Java tarih tipleri için gereken `jackson-datatype-jsr310` modülü projede eksik; Jackson bu modül olmadan `spring.jackson.*` ayarlarını da uygulayamıyor. Düzeltme: bağımlılığı `pom.xml`'e eklemek; iki sorun birlikte çözülür."
+    misconception: { tr: "`LocalDateTime` hatasını eksik bağımlılığa bağlıyor. Web starter'ı bu modülü zaten getirir; Boot'un mapper'ı onu otomatik kaydeder, `new ObjectMapper()` ise kaydetmez. Ayrıca modülün `spring.jackson.*` ayarlarıyla ilgisi yoktur." }
+explanation:
+  tr: |
+    Boot, kendi `ObjectMapper`'ını `@ConditionalOnMissingBean` ile tanımlar: context'te senin
+    tanımladığın bir `ObjectMapper` varsa kendisininkini oluşturmaz (auto-configuration geri çekilir)
+    ve Spring MVC seninkini kullanır. Boot'un mapper'ı, `spring.jackson.*` ayarlarını uygulayan ve
+    classpath'teki Java Time modülünü kaydeden bir builder'dan üretilir; `new ObjectMapper()` bunların
+    hiçbirini almaz. Düzeltme: `JacksonConfig`'i silip `spring.jackson.property-naming-strategy:
+    SNAKE_CASE` eklemek. Property'nin karşılamadığı bir ayar gerekirse
+    `Jackson2ObjectMapperBuilderCustomizer` bean'i Boot'un varsayılanlarını koruyarak üstüne ekler.
+    Hangi auto-configuration'ın neden devreye girmediğini `--debug` ile açılan conditions report gösterir.
+resources: [spring-boot-docs-autoconfig, spring-boot-howto-jackson]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-30 }

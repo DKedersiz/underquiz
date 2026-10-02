@@ -1,0 +1,42 @@
+id: jpa-transaction.orm-basics.missing-id
+version: 1
+topic: jpa-transaction
+subtopic: orm-basics
+level: 1
+type: mc
+tags: [entity, primary-key]
+prompt:
+  tr: |
+    Aşağıdaki sınıf eklendikten sonra uygulama açılırken Hibernate bu entity için hata veriyor.
+
+    ```java
+    @Entity
+    public class Product {
+        private Long id;
+        private String name;
+        private BigDecimal price;
+
+        protected Product() {}
+        // getter/setter'lar
+    }
+    ```
+
+    Hatanın sebebi nedir?
+options:
+  - id: a
+    text: "Alanlar `@Column` ile işaretlenmemiş; JPA yalnızca `@Column` taşıyan alanları tablodaki kolonlara eşler."
+    misconception: { tr: "Alanların yalnız `@Column` ile kalıcı hâle geldiğini sanıyor. `@Transient` ile işaretlenmeyen alanlar varsayılan olarak kalıcıdır; `@Column` yalnız kolon adı, uzunluk, null kabul etme gibi ayarları değiştirmek için gerekir." }
+  - id: b
+    text: "Sınıf `Serializable` arayüzünü uygulamıyor; JPA her entity'nin serileştirilebilir olmasını zorunlu tutar."
+    misconception: { tr: "`Serializable`'ı zorunlu sanıyor. Spesifikasyon bunu yalnız entity başka bir sürece değer olarak (detached nesne olarak, remote) gönderilecekse ister; sıradan bir entity için zorunlu değildir." }
+  - id: c
+    text: "Sınıfta `@Table` yok; bu anotasyon olmadan JPA entity'nin hangi tabloya yazılacağını bilemez."
+    misconception: { tr: "Tablo adının mutlaka belirtilmesi gerektiğini sanıyor. `@Table` yoksa tablo adı entity adından (varsayılan olarak sınıf adı) türetilir; `@Table` yalnız farklı bir ad veya şema istendiğinde gerekir." }
+  - id: d
+    text: "Birincil anahtar tanımlanmamış; alanın adının `id` olması yetmez, alan `@Id` ile işaretlenmelidir."
+    correct: true
+explanation:
+  tr: "Her entity'nin bir birincil anahtarı olmak zorundadır ve JPA bunu alan adından tahmin etmez; anahtar `@Id` (veya bileşik anahtarlarda `@EmbeddedId`/`@IdClass`) ile belirtilir. Id genellikle `@GeneratedValue` ile birlikte kullanılır. Bir entity için zorunlu olanlar kısaca: `@Entity`, bir `@Id` ve `public` ya da `protected` argümansız constructor. `@Column`, `@Table` ve `Serializable` ise ihtiyaca göre eklenir."
+resources: [jakarta-persistence-spec]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

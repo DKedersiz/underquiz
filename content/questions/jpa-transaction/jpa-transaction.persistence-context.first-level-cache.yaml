@@ -1,0 +1,48 @@
+id: jpa-transaction.persistence-context.first-level-cache
+version: 1
+topic: jpa-transaction
+subtopic: persistence-context
+level: 3
+type: mc
+tags: [first-level-cache, persistence-context]
+prompt:
+  tr: |
+    SQL loglaması açık bir Spring Boot 3 projesinde, varsayılan ayarlarla (second-level cache
+    yapılandırılmamış) şu metot çalıştırılıyor:
+
+    ```java
+    @Transactional
+    public void checkStock(Long productId) {
+        Product first = productRepository.findById(productId).orElseThrow();
+        Product second = productRepository.findById(productId).orElseThrow();
+        System.out.println(first == second);
+    }
+    ```
+
+    Veritabanına kaç SELECT gider ve ekrana ne yazılır?
+options:
+  - id: a
+    text: "1 SELECT, `true`. İkinci `findById` önce persistence context'e bakar; ürün orada managed olduğu için veritabanına gitmeden aynı nesneyi döner."
+    correct: true
+  - id: b
+    text: "2 SELECT, `false`. Her repository çağrısı veritabanına ayrı bir sorgu gönderir ve dönen satırdan yeni bir `Product` nesnesi oluşturur."
+    misconception: { tr: "Repository'yi her çağrıda veritabanına giden basit bir DAO sanıyor. Aynı transaction içinde `findById` (JPA'nın `find` metodu) önce persistence context'e bakar; persistence context her zaman vardır, ayrıca açılmaz." }
+  - id: c
+    text: "1 SELECT, `false`. İkinci çağrı veriyi Hibernate'in önbelleğinden alır ama çağırana ayrı bir kopya verir; iki nesne `equals` ile eşittir, `==` ile değildir."
+    misconception: { tr: "Önbellekten kopya döndüğünü sanıyor. Persistence context bir id için tek bir nesne tutar ve aynı id için her zaman aynı instance'ı döner. Bu yüzden bir referansta yapılan değişiklik diğerinde de görünür." }
+  - id: d
+    text: "2 SELECT, `true`. Hibernate aynı id için tek nesne tutar, ama `findById` her çağrıda satırı yeniden okuyup bu nesneyi veritabanındaki son değerlerle günceller."
+    misconception: { tr: "`find`'ın veriyi tazelediğini sanıyor. Entity persistence context'te varsa `find` veritabanına gitmez; transaction sürerken başkasının yaptığı değişiklik bu nesnede görünmez. Satırı yeniden okumak için `EntityManager.refresh()` gerekir." }
+explanation:
+  tr: |
+    Persistence context (first-level cache) her `EntityManager`'da vardır ve kapatılamaz. Bir id için
+    tek bir managed instance tutar: `find`/`findById` önce ona bakar, entity oradaysa SQL çalıştırmadan
+    aynı nesneyi döner. Sınırı persistence context'in ömrüdür; Spring'de bu genellikle transaction'dır,
+    yani ayrı transaction'lardaki iki `findById` iki ayrı SELECT çalıştırır. JPQL ve derived query'ler
+    (ör. `findByName`) her seferinde veritabanına gider, ama dönen satır zaten managed bir entity'ye
+    aitse yine aynı instance'ı döndürür. Second-level cache ise bundan ayrıdır: `EntityManagerFactory`
+    düzeyindedir, transaction'lar arasında paylaşılır ve varsayılan olarak kapalıdır, ayrıca
+    yapılandırılır.
+resources: [jakarta-persistence-spec, hibernate-user-guide]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

@@ -1,0 +1,63 @@
+id: jpa-transaction.entity-mapping.owning-side
+version: 1
+topic: jpa-transaction
+subtopic: entity-mapping
+level: 2
+type: mc
+tags: [relationships, mapped-by, owning-side]
+prompt:
+  tr: |
+    İki entity arasında çift yönlü bir ilişki var:
+
+    ```java
+    @Entity
+    public class Department {
+        @Id @GeneratedValue
+        private Long id;
+
+        @OneToMany(mappedBy = "department")
+        private List<Employee> employees = new ArrayList<>();
+        // getter'lar
+    }
+
+    @Entity
+    public class Employee {
+        @Id @GeneratedValue
+        private Long id;
+
+        @ManyToOne
+        private Department department;
+        // getter/setter'lar
+    }
+    ```
+
+    Bir servis metodu yeni bir çalışanı departmana şöyle ekliyor:
+
+    ```java
+    @Transactional
+    public void hire(Long departmentId, Employee employee) {
+        Department department = departmentRepository.findById(departmentId).orElseThrow();
+        department.getEmployees().add(employee);
+        employeeRepository.save(employee);
+    }
+    ```
+
+    `employee` yeni oluşturulmuş bir nesne ve `setDepartment(...)` hiç çağrılmamış. Metot bittikten sonra veritabanında ne görürsün?
+options:
+  - id: a
+    text: "Çalışan kaydedilir ama `department_id` `NULL` kalır; ilişkiyi owning side olan `Employee.department` belirler."
+    correct: true
+  - id: b
+    text: "Çalışan `department_id` dolu olarak kaydedilir; Hibernate ilişkiyi departmanın `employees` listesinden anlar."
+    misconception: { tr: "İlişkiyi `mappedBy` olan (inverse) tarafın belirlediğini sanıyor. Inverse taraftaki koleksiyona yapılan değişiklikler foreign key'e yansımaz; veritabanına yazılan, owning side'daki `employee.getDepartment()` değeridir." }
+  - id: c
+    text: "Metot exception ile biter; Hibernate ilişkinin iki tarafının tutarsız olduğunu fark eder ve kaydı reddeder."
+    misconception: { tr: "JPA'nın iki tarafın tutarlılığını denetlediğini sanıyor. Spesifikasyona göre iki tarafı tutarlı tutmak geliştiricinin sorumluluğudur; Hibernate bunu kontrol etmez, ilişkiyi sessizce owning side'a göre yazar." }
+  - id: d
+    text: "Çalışan kaydedilir ve ilişki, iki tabloyu bağlayan ayrı bir join table'a eklenen bir satırla kurulur."
+    misconception: { tr: "`@OneToMany`'nin her zaman join table kullandığını sanıyor. Join table, `mappedBy` olmayan tek yönlü `@OneToMany` için varsayılandır. Burada `mappedBy` olduğu için ilişki yalnız çalışan tablosundaki foreign key kolonuyla tutulur." }
+explanation:
+  tr: "Çift yönlü bir ilişkide veritabanında tek bir foreign key vardır ve onu yöneten taraf owning side'dır. One-to-many / many-to-one ilişkide owning side her zaman 'çok' taraf, yani `@ManyToOne` alanıdır; `mappedBy` ise karşı tarafa (inverse side) yazılır ve 'bu ilişkinin sahibi karşıdaki alan' der. Bu yüzden `employee.setDepartment(department)` çağrılmalıdır. Bellekteki nesnelerin de tutarlı kalması için iki tarafı birlikte güncelleyen bir yardımcı metot (örn. `Department.addEmployee(e)`: listeye ekler ve `e.setDepartment(this)` çağırır) yaygın bir çözümdür."
+resources: [jakarta-persistence-spec, hibernate-user-guide]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

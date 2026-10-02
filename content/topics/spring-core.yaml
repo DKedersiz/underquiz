@@ -1,0 +1,68 @@
+id: spring-core
+domain: backend-fundamentals
+title: { tr: "Spring Core" }
+subtopics:
+  - { id: ioc-di,               title: { tr: "IoC ve Dependency Injection" } }
+  - { id: bean-scope-lifecycle, title: { tr: "Bean scope ve yaşam döngüsü" } }
+  - { id: proxy-aop,            title: { tr: "Proxy ve AOP mantığı" } }
+  - { id: boot-autoconfig,      title: { tr: "Spring Boot: auto-configuration ve yapılandırma" } }
+levels:                      # bu konu için seviyelerin somut anlamı
+  1: { tr: "IoC/DI, bean ve container kavramlarını tanır; varsayılan davranışları bilir." }
+  2: { tr: "Bağımlılıkları doğru biçimde enjekte eder; scope ve injection türlerini bilinçli seçer." }
+  3: { tr: "Proxy mekanizmasını ve bunun anotasyonların davranışına etkisini açıklar." }
+  4: { tr: "Bean scope, proxy ve eşzamanlılıktan doğan pratik sorunları teşhis eder, düzeltir ve seçenekler arasında gerekçeli seçim yapar (güçlü junior)." }
+resources:
+  - id: spring-docs-beans
+    title: "Spring Framework Reference: The IoC Container"
+    url: "https://docs.spring.io/spring-framework/reference/core/beans.html"
+    kind: docs            # docs | article | video | book
+    lang: en
+    levels: [1, 2, 3]
+  - id: spring-boot-docs-autoconfig
+    title: "Spring Boot Reference: Auto-configuration"
+    url: "https://docs.spring.io/spring-boot/reference/using/auto-configuration.html"
+    kind: docs
+    lang: en
+    levels: [1, 2, 3, 4]
+  - id: spring-boot-howto-jackson
+    title: "Spring Boot How-to: Customize the Jackson ObjectMapper"
+    url: "https://docs.spring.io/spring-boot/how-to/spring-mvc.html#howto.spring-mvc.customize-jackson-objectmapper"
+    kind: docs
+    lang: en
+    levels: [4]
+  - id: spring-docs-aop
+    title: "Spring Framework Reference: Aspect Oriented Programming with Spring"
+    url: "https://docs.spring.io/spring-framework/reference/core/aop.html"
+    kind: docs
+    lang: en
+    levels: [1, 2, 3, 4]
+  - id: spring-docs-transactional
+    title: "Spring Framework Reference: Using @Transactional"
+    url: "https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/annotations.html"
+    kind: docs
+    lang: en
+    levels: [2, 3]
+  - id: spring-docs-classpath-scanning
+    title: "Spring Framework Reference: Classpath Scanning and Managed Components"
+    url: "https://docs.spring.io/spring-framework/reference/core/beans/classpath-scanning.html"
+    kind: docs
+    lang: en
+    levels: [1, 2]
+  - id: spring-boot-docs-profiles
+    title: "Spring Boot Reference: Profiles"
+    url: "https://docs.spring.io/spring-boot/reference/features/profiles.html"
+    kind: docs
+    lang: en
+    levels: [1, 2]
+  - id: spring-boot-docs-external-config
+    title: "Spring Boot Reference: Externalized Configuration"
+    url: "https://docs.spring.io/spring-boot/reference/features/external-config.html"
+    kind: docs
+    lang: en
+    levels: [2, 3, 4]
+  - id: spring-boot-docs-code-structure
+    title: "Spring Boot Reference: Structuring Your Code"
+    url: "https://docs.spring.io/spring-boot/reference/using/structuring-your-code.html"
+    kind: docs
+    lang: en
+    levels: [2, 3]

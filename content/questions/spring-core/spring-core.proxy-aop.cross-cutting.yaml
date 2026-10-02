@@ -1,0 +1,27 @@
+id: spring-core.proxy-aop.cross-cutting
+version: 1
+topic: spring-core
+subtopic: proxy-aop
+level: 1
+type: mc
+tags: [transactional]
+prompt:
+  tr: "Spring'de AOP (Aspect-Oriented Programming) hangi sorunu çözmek için kullanılır?"
+options:
+  - id: a
+    text: "Bean'leri oluşturup ihtiyaç duydukları bağımlılıkları constructor veya alanlar üzerinden enjekte etmek için."
+    misconception: { tr: "AOP'yi dependency injection ile karıştırıyor. Bağımlılıkları IoC container enjekte eder; AOP ise metot çağrılarının etrafına ortak davranış ekler." }
+  - id: b
+    text: "Sınıf ve kalıtım yerine aspect'leri kullanarak nesne yönelimli programlamanın yerini almak için."
+    misconception: { tr: "AOP'nin OOP'nin yerine geçtiğini sanıyor. AOP, OOP'yi tamamlar: iş mantığı yine sınıflarda durur, aspect'ler yalnızca birçok sınıfta tekrar eden ortak işleri toplar." }
+  - id: c
+    text: "Uygulamada fırlatılan exception'ları yakalayıp log dosyasına yazan hazır bir loglama aracı sağlamak için."
+    misconception: { tr: "AOP'yi bir loglama kütüphanesi sanıyor. Loglama yalnızca bir kullanım örneğidir; `@Transactional` gibi Spring özellikleri de AOP üzerine kuruludur." }
+  - id: d
+    text: "Transaction ve loglama gibi birçok sınıfta tekrar eden işleri iş kodundan ayırıp tek yerde toplamak için."
+    correct: true
+explanation:
+  tr: "Birçok sınıfı 'kesen' bu ortak işlere cross-cutting concern denir. AOP ile bunlar bir aspect'te bir kez yazılır, iş kodu sade kalır. Spring'in bildirimsel transaction yönetimi (`@Transactional`) de bu mekanizmayla çalışır."
+resources: [spring-docs-aop]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

@@ -1,0 +1,26 @@
+id: spring-core.autoconfig.what-it-does
+version: 1
+topic: spring-core
+subtopic: boot-autoconfig
+level: 1
+type: mc
+prompt:
+  tr: "Spring Boot'taki auto-configuration ne yapar?"
+options:
+  - id: a
+    text: "Classpath'teki kütüphanelere ve tanımlı bean'lere bakarak gereken bean'leri (örneğin `DataSource`) yapılandırır."
+    correct: true
+  - id: b
+    text: "Projenin ihtiyaç duyduğu kütüphaneleri (örneğin JPA, Jackson) `pom.xml`'e kendisi ekler ve indirir."
+    misconception: { tr: "Auto-configuration'ı bağımlılık yönetimiyle karıştırıyor. Kütüphaneleri sen eklersin (genellikle bir starter ile); auto-configuration yalnızca classpath'te olanı yapılandırır." }
+  - id: c
+    text: "Web, JPA ve security gibi bütün Spring modüllerini, projede kullanılmasalar da her uygulamada açar."
+    misconception: { tr: "Auto-configuration'ın koşulsuz çalıştığını sanıyor. Her yapılandırma koşula bağlıdır: ilgili kütüphane classpath'te yoksa veya aynı türde kendi bean'in varsa devreye girmez." }
+  - id: d
+    text: "Spring Initializr'da seçtiğin ayarları proje oluşturulurken bir kez koda yazar; sonra etkisi kalmaz."
+    misconception: { tr: "Auto-configuration'ı proje oluşturma aracıyla karıştırıyor. Auto-configuration her uygulama başlangıcında, çalışma zamanında yeniden değerlendirilir." }
+explanation:
+  tr: "Örneğin classpath'te bir veritabanı sürücüsü varsa ve sen bir `DataSource` tanımlamadıysan Boot bunu senin için yapılandırır. Auto-configuration, `@SpringBootApplication` içindeki `@EnableAutoConfiguration` ile açılır. Hangi yapılandırmanın neden uygulandığını görmek için uygulamayı `--debug` ile başlatabilirsin."
+resources: [spring-boot-docs-autoconfig]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

@@ -1,0 +1,45 @@
+id: jpa-transaction.transactions.checked-exception-rollback
+version: 1
+topic: jpa-transaction
+subtopic: transactions
+level: 2
+type: mc
+tags: [transactional, rollback, exceptions]
+prompt:
+  tr: |
+    ```java
+    public class PaymentFailedException extends Exception {
+        public PaymentFailedException(String message) { super(message); }
+    }
+
+    @Service
+    public class ReservationService {
+        // bağımlılıklar constructor ile geliyor
+
+        @Transactional
+        public void reserve(Reservation reservation) throws PaymentFailedException {
+            reservationRepository.save(reservation);
+            paymentClient.charge(reservation);   // ödeme reddedilirse PaymentFailedException fırlatır
+        }
+    }
+    ```
+
+    Varsayılan ayarlarla, `charge()` `PaymentFailedException` fırlatırsa rezervasyon kaydına ne olur?
+options:
+  - id: a
+    text: "Geri alınır; `@Transactional` metottan dışarı çıkan her exception'da, türüne bakmadan transaction'ı rollback eder."
+    misconception: { tr: "Her exception'da rollback yapıldığını sanıyor. Varsayılan kural yalnız `RuntimeException` ve `Error` için rollback'tir; checked exception'larda transaction commit edilir." }
+  - id: b
+    text: "Geri alınır ve exception Spring tarafından yakalanır; bu yüzden `reserve()`'u çağıran kod hatayı hiç görmez."
+    misconception: { tr: "Spring'in exception'ı yuttuğunu sanıyor. Transaction altyapısı commit ya da rollback kararını verdikten sonra exception'ı olduğu gibi çağırana iletir." }
+  - id: c
+    text: "Ne commit ne rollback yapılır; transaction açık kalır ve bağlantı zaman aşımına uğrayana kadar bekler."
+    misconception: { tr: "Checked exception'da transaction'ın askıda kaldığını sanıyor. Metot hangi exception ile biterse bitsin Spring transaction'ı sonlandırır; rollback kuralına göre ya commit ya rollback yapar." }
+  - id: d
+    text: "Commit edilir; varsayılan olarak yalnız unchecked hatalar (`RuntimeException`, `Error`) rollback'e yol açar."
+    correct: true
+explanation:
+  tr: "Spring'in varsayılan kuralı: unchecked exception (`RuntimeException` ve alt sınıfları) ve `Error` rollback'e, checked exception commit'e yol açar. Burada ödeme alınmadığı hâlde rezervasyon kalıcı olur. Düzeltme için `@Transactional(rollbackFor = PaymentFailedException.class)` yazılabilir ya da exception `RuntimeException`'dan türetilebilir. Spring 6.2'den beri bu varsayılan, `@EnableTransactionManagement(rollbackOn = RollbackOn.ALL_EXCEPTIONS)` ile uygulama genelinde de değiştirilebilir."
+resources: [spring-docs-transactions]   # önerilen ek: spring-docs-transactional (dosya sonunda)
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

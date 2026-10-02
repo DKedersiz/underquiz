@@ -1,0 +1,51 @@
+id: spring-core.ioc-di.circular-dependency
+version: 2
+topic: spring-core
+subtopic: ioc-di
+level: 3
+type: mc
+tags: [circular-dependency]
+prompt:
+  tr: |
+    `OrderService` ile `CustomerService` birbirine constructor injection ile bağımlı:
+
+    ```java
+    @Service
+    public class OrderService {
+        private final CustomerService customerService;
+        public OrderService(CustomerService customerService) { this.customerService = customerService; }
+    }
+
+    @Service
+    public class CustomerService {
+        private final OrderService orderService;
+        public CustomerService(OrderService orderService) { this.orderService = orderService; }
+    }
+    ```
+
+    Uygulama açılırken `BeanCurrentlyInCreationException` ile açılmıyor. Sebep nedir ve doğru
+    düzeltme hangisidir?
+options:
+  - id: a
+    text: "Sebep: iki bean de oluşturulabilmek için diğerinin hazır olmasını bekliyor. Düzeltme: ortak mantığı üçüncü bir bean'e taşıyıp döngüyü tasarımla kırmak."
+    correct: true
+  - id: b
+    text: "Sebep: İlgili ayar kapalı. `spring.main.allow-circular-references=true` yapılırsa Spring döngüyü otomatik çözer ve uygulama açılır."
+    misconception: { tr: "Bu ayarın her döngüyü çözdüğünü sanıyor. Ayar yalnızca alan/setter enjeksiyonunda işe yarar, çünkü orada Spring henüz tamamlanmamış bir nesnenin erken referansını verebilir. Burada ikisi de constructor injection kullanıyor; nesne constructor bitene kadar hiç var olmadığından verilecek bir erken referans yoktur, bu ayar açıkken de uygulama aynı hatayla açılmaz." }
+  - id: c
+    text: "Sebep: bağımlılıklardan biri doğrudan enjekte ediliyor. Parametreye `@Lazy` eklemek döngüyü kalıcı olarak çözer; tasarımda başka bir değişikliğe gerek kalmaz."
+    misconception: { tr: "@Lazy uygulamayı gerçekten açar, çünkü Spring gerçek nesne yerine geciktirilmiş bir proxy enjekte eder. Ama bunu 'düzeltme' saymak yanılgıdır: iki servis hâlâ birbirine dairesel bağımlıdır, yalnızca bu bağımlılığın çözümü ilk kullanıma ertelenmiştir. Asıl tasarım sorunu yerinde durur." }
+  - id: d
+    text: "Sebep: Sınıfların tanımlanma sırası ters. `CustomerService` sınıfı dosyada veya paket içinde `OrderService`'ten önce tanımlanırsa Spring onu önce oluşturur ve döngü oluşmaz."
+    misconception: { tr: "Spring'in bean'leri kodda yazılma veya dosya sırasına göre oluşturduğunu sanıyor. Bean oluşturma sırasını bağımlılık grafiği belirler, kod veya dosya sırası değil; iki bean birbirine bağımlıysa hangisi önce tanımlanırsa tanımlansın aynı döngü oluşur." }
+explanation:
+  tr: |
+    Constructor injection'da bir bean'in constructor'ı çalışmadan o bean'e ait bir referans yoktur;
+    bu yüzden Spring döngüdeki bean'lerden birine "yarım" bir referans veremez ve
+    `BeanCurrentlyInCreationException` fırlatır. `spring.main.allow-circular-references` ve `@Lazy`
+    gibi yollar bazı durumlarda uygulamayı açtırır, ama ikisi de asıl sorunu (iki servisin birbirine
+    dairesel bağımlı olmasını) çözmez; kalıcı düzeltme bağımlılık grafiğini tasarımla kırmaktır,
+    örneğin ortak mantığı üçüncü bir bean'e taşımak.
+resources: [spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-28 }

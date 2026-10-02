@@ -1,0 +1,56 @@
+id: jpa-transaction.transactions.required-vs-requires-new
+version: 1
+topic: jpa-transaction
+subtopic: transactions
+level: 2
+type: mc
+tags: [transactional, propagation, requires-new]
+prompt:
+  tr: |
+    Sipariş sırasında müşteriye gidecek bildirim de kaydediliyor. `NotificationService` ayrı bir bean.
+
+    ```java
+    @Service
+    public class OrderService {
+        // bağımlılıklar constructor ile geliyor
+
+        @Transactional
+        public void placeOrder(OrderRequest request) {
+            notificationService.saveNotification(request);
+            orderRepository.save(Order.from(request));
+            paymentClient.charge(request); // ödeme reddedilirse PaymentRejectedException (RuntimeException)
+        }
+    }
+
+    @Service
+    public class NotificationService {
+        // bağımlılıklar constructor ile geliyor
+
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public void saveNotification(OrderRequest request) {
+            notificationRepository.save(Notification.from(request));
+        }
+    }
+    ```
+
+    Ödeme reddedilip `placeOrder()` exception ile biterse bildirim ve sipariş kayıtlarına ne olur?
+    `saveNotification()` propagation belirtilmeden (`REQUIRED`) yazılsaydı ne değişirdi?
+options:
+  - id: a
+    text: "Sipariş geri alınır, bildirim kalır: `REQUIRES_NEW` ayrı transaction'da hemen commit eder. `REQUIRED` olsaydı bildirim dış transaction'a katılır, siparişle geri alınırdı."
+    correct: true
+  - id: b
+    text: "İkisi de geri alınır: iç metot dış transaction'ın içinden çağrıldığı için, propagation ne olursa olsun dıştaki rollback içeride yazılanları da geri alır."
+    misconception: { tr: "`REQUIRES_NEW`'i dış transaction'a bağlı bir alt transaction sanıyor. `REQUIRES_NEW` bağımsız bir fiziksel transaction açar; o commit edildikten sonra dıştaki rollback onu etkilemez. Dışla birlikte geri alınan kısmi işlem (savepoint) `NESTED`'in davranışıdır." }
+  - id: c
+    text: "İkisi de kalır: her `@Transactional` metot kendi transaction'ını açıp commit eder; `REQUIRED` ile `REQUIRES_NEW` arasında yalnız performans farkı vardır, davranış aynıdır."
+    misconception: { tr: "`REQUIRED`'ı her metot için ayrı bir transaction sanıyor. `REQUIRED` varsa mevcut transaction'a katılır; sipariş ile ödeme aynı transaction'da olduğu için exception siparişi geri aldırır." }
+  - id: d
+    text: "Propagation fark etmez: `saveNotification()` ödeme adımından önce çalışıp bittiği için bildirim o anda veritabanına yazılmıştır ve iki durumda da kalır; sipariş geri alınır."
+    misconception: { tr: "Bir metodun bitmesini veya `save()` çağrısını commit sanıyor. `REQUIRED`'da bildirim dış transaction'a katılır ve commit ancak `placeOrder()` başarıyla bitince yapılır; rollback olursa bildirim de geri alınır." }
+explanation:
+  tr: "`REQUIRED` (varsayılan) mevcut bir transaction varsa ona katılır, yoksa yenisini açar; katılan tüm işler birlikte commit ya da rollback olur. `REQUIRES_NEW` ise dış transaction'ı askıya alır ve bağımsız bir fiziksel transaction açar; metot bitince bu transaction kendi başına commit edilir ve dış transaction'ın sonucundan etkilenmez. Bu, 'ana iş başarısız olsa da kalması gereken' kayıtlar (bildirim, audit) için kullanılır. Bedeli: dış transaction'ın bağlantısı açıkken ikinci bir bağlantı alınır. Ayrıca çağrının proxy'den geçmesi gerekir; bu yüzden `saveNotification()` ayrı bir bean'de. Bu örnekte `REQUIRES_NEW` aslında istenmeyen bir sonuç veriyor: ödemesi reddedilen sipariş için de bildirim kaydı kalıyor ve müşteriye 'siparişiniz alındı' gidebilir. Ayrı transaction yalnız 'ana iş başarısız olsa da kalmalı' denen kayıtlar için seçilmeli."
+revealsAnswerOf: [jpa-transaction.transactions.audit-log-on-failure, jpa-transaction.transactions.inner-exception-caught]   # doğru şık audit sorusunun çözümünü (REQUIRES_NEW) ve REQUIRED'ın katılma davranışını veriyor
+resources: [spring-docs-transactions, spring-docs-tx-propagation]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

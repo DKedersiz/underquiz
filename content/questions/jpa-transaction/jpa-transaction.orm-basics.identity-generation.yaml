@@ -1,0 +1,27 @@
+id: jpa-transaction.orm-basics.identity-generation
+version: 2
+topic: jpa-transaction
+subtopic: orm-basics
+level: 1
+type: mc
+tags: [entity, primary-key, id-generation]
+prompt:
+  tr: "Bir entity'de id alanı `@Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;` olarak tanımlanmış. Bu tanım ne anlama gelir?"
+options:
+  - id: a
+    text: "Id'yi veritabanı üretir: satır eklenirken identity (auto-increment) kolonu bir sonraki değeri verir."
+    correct: true
+  - id: b
+    text: "Id'yi Hibernate uygulamanın içinde üretir: bellekte bir sayaç tutar ve her yeni nesnede onu bir artırır."
+    misconception: { tr: "Değerin uygulamada üretildiğini sanıyor. IDENTITY'de değeri veritabanı üretir; Hibernate bu değeri INSERT'ten sonra veritabanından alır. Bellekte tutulan bir sayaç, uygulamanın birden çok instance'ı çalıştığında çakışan id'ler üretirdi." }
+  - id: c
+    text: "Id değerini kaydetmeden önce sen vermelisin; IDENTITY yalnız bu alanın birincil anahtar olduğunu belirtir."
+    misconception: { tr: "`@GeneratedValue`'yu `@Id` ile karıştırıyor. Alanın birincil anahtar olduğunu `@Id` söyler; `@GeneratedValue` değerin otomatik üretileceğini belirtir, bu yüzden yeni kayıtta id'yi elle vermezsin." }
+  - id: d
+    text: "Her yeni kayda benzersiz bir UUID atanır; böylece id'ler farklı veritabanlarında bile çakışmaz."
+    misconception: { tr: "IDENTITY'yi `GenerationType.UUID` ile karıştırıyor. UUID stratejisi benzersiz bir UUID üretir; IDENTITY ise veritabanının kendi artan sayısal kolonunu kullanır." }
+explanation:
+  tr: "JPA'daki başlıca stratejiler: `IDENTITY` (veritabanının identity/auto-increment kolonu), `SEQUENCE` (veritabanı sequence'i), `UUID` ve sağlayıcının seçtiği `AUTO`. `GenerationType.UUID`, Jakarta Persistence 3.1 ile eklendi. IDENTITY'de id ancak satır eklendikten sonra bilinir; bu yüzden Hibernate INSERT'i hemen çalıştırır ve bu entity için toplu (JDBC batch) insert yapamaz. Hibernate, veritabanı destekliyorsa SEQUENCE kullanılmasını önerir."
+resources: [jakarta-persistence-spec, hibernate-user-guide]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-28 }

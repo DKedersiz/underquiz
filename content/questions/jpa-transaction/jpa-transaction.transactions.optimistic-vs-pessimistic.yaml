@@ -1,0 +1,50 @@
+id: jpa-transaction.transactions.optimistic-vs-pessimistic
+version: 2
+topic: jpa-transaction
+subtopic: transactions
+level: 2
+type: mc
+tags: [concurrency, locking, optimistic-locking, pessimistic-locking]
+prompt:
+  tr: |
+    Aynı kaydın eşzamanlı güncellenmesine karşı iki yaklaşım var:
+
+    ```java
+    // 1) Optimistic locking
+    @Entity
+    public class Product {
+        @Id @GeneratedValue
+        private Long id;
+        @Version
+        private Long version;
+        // ...
+    }
+
+    // 2) Pessimistic locking
+    public interface ProductRepository extends JpaRepository<Product, Long> {
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("select p from Product p where p.id = :id")
+        Optional<Product> findByIdForUpdate(@Param("id") Long id);
+    }
+    ```
+
+    Hangi ifade bu iki yaklaşımın nasıl çalıştığını doğru anlatıyor?
+options:
+  - id: a
+    text: "Optimistic kilit tutmaz; yazarken versiyonu kontrol eder, kayıt arada değiştiyse hata verir. Pessimistic satırı okurken kilitler; aynı satırı isteyenler bekler."
+    correct: true
+  - id: b
+    text: "Optimistic, çakışma olmayacağını varsayıp hiçbir kontrol yapmaz; son yazanın değeri kalır. Pessimistic ise çakışmayı fark edip ikinci yazana hata verir."
+    misconception: { tr: "Optimistic locking'i 'kontrolsüz, son yazan kazanır' sanıyor. `@Version` ile Hibernate her UPDATE'e versiyon koşulu ekler; arada başka biri kaydı değiştirdiyse güncelleme reddedilir ve hata alınır. Yani çakışma kaybolmaz, fark edilir." }
+  - id: c
+    text: "İkisi de satırı kilitler; fark kilidin süresidir. Optimistic kilidi sorgu bitince, pessimistic ise transaction bitince bırakır."
+    misconception: { tr: "Optimistic locking'in de kilit tuttuğunu sanıyor. Optimistic hiçbir satırı kilitlemez; çakışmayı yazma anında versiyon karşılaştırmasıyla fark eder. Sık çakışmada bu, çok sayıda reddedilen güncelleme ve yeniden deneme demektir." }
+  - id: d
+    text: "Optimistic, uygulama belleğinde `synchronized` benzeri bir kilit kullanır; pessimistic kilidi veritabanında tutar. Bu yüzden optimistic yalnız tek sunucuda işe yarar."
+    misconception: { tr: "Optimistic locking'i JVM içi bir kilit sanıyor. İki yaklaşım da veritabanı üzerinden çalışır: optimistic versiyon kolonuyla, pessimistic satır kilidiyle. Bu yüzden ikisi de birden çok uygulama instance'ında çalışır; seçim ölçütü çakışmanın ne sıklıkla beklendiğidir." }
+explanation:
+  tr: "Optimistic locking (`@Version`): kilit tutulmaz. Hibernate UPDATE'e `where id = ? and version = ?` koşulunu ekler ve versiyonu artırır; arada kayıt değiştiyse güncelleme hiçbir satırı etkilemez ve Spring'de `ObjectOptimisticLockingFailureException` fırlar. İşlem yeniden denenir ya da kullanıcıya bildirilir. Pessimistic locking (`PESSIMISTIC_WRITE`): satır okunurken kilitlenir (çoğu veritabanında `SELECT ... FOR UPDATE`); aynı satırı kilitlemek veya güncellemek isteyen diğer transaction'lar bekler. Kilit transaction bitene kadar tutulur, bu yüzden transaction kısa tutulmalıdır; deadlock riski vardır. Seçim çakışma sıklığına göre yapılır: nadir çakışmada (editör ekranı) optimistic ucuzdur, sık çakışmada (kampanya stoğu) sürekli retry yerine pessimistic kilit veya tek sorguda koşullu güncelleme daha uygundur."
+revealsAnswerOf: [jpa-transaction.transactions.concurrent-stock-update]   # doğru şık L4 stok sorusunun iki çözümünün mekanizmasını veriyor
+resources: [spring-data-jpa-locking, hibernate-user-guide, jakarta-persistence-spec]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

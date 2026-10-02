@@ -1,0 +1,104 @@
+id: jpa-transaction.fetching.lazy-initialization
+version: 3
+topic: jpa-transaction
+subtopic: fetching
+level: 3
+type: open
+tags: [lazy-loading, open-in-view, transactional]
+answerHint: medium
+prompt:
+  tr: |
+    Aylardır sorunsuz çalışan bir Spring Boot 3 projesinde, bir code review sonrası `application.yml`'a
+    `spring.jpa.open-in-view: false` eklendi. Sipariş detayı endpoint'i artık şu hatayla 500 dönüyor:
+
+    ```
+    org.hibernate.LazyInitializationException: failed to lazily initialize a collection of role: com.example.shop.Order.items: could not initialize proxy - no Session
+    ```
+
+    ```java
+    @Entity
+    @Table(name = "orders")
+    public class Order {
+        @Id @GeneratedValue
+        private Long id;
+
+        @OneToMany(mappedBy = "order")
+        private List<OrderItem> items = new ArrayList<>();
+        // getter'lar
+    }
+
+    @Service
+    public class OrderService {
+        // OrderRepository constructor ile enjekte ediliyor
+        @Transactional(readOnly = true)
+        public Order getOrder(Long id) {
+            return orderRepository.findById(id).orElseThrow();
+        }
+    }
+
+    @RestController
+    public class OrderController {
+        // OrderService constructor ile enjekte ediliyor
+        @GetMapping("/orders/{id}")
+        public OrderResponse get(@PathVariable Long id) {
+            Order order = orderService.getOrder(id);
+            return OrderResponse.from(order); // order.getItems() üzerinde dolaşıp satırları kopyalıyor
+        }
+    }
+    ```
+
+    Hata neden oluşuyor? Ayar eklenmeden önce aynı kod neden çalışıyordu? Hangi çözümler var,
+    hangisini neden seçersin? (Kod yazman gerekmiyor; çözümü adıyla ve ne yaptığıyla anlatman yeterli.)
+rubric:
+  - { id: r1, weight: 2, required: true, point: { tr: "Sebep: `items` LAZY bir koleksiyondur ve `findById` onu yüklemez. `getOrder()` dönerken transaction ve onunla birlikte persistence context (Hibernate Session) kapanır, `order` detached olur. Controller'da koleksiyona ilk erişimde Hibernate yükleme yapacak açık bir Session bulamaz ve hata fırlatır." } }
+  - { id: r2, weight: 1, point: { tr: "Önceden neden çalıştığı: open-in-view açıkken EntityManager HTTP isteğinin sonuna kadar açık kalır; transaction bitse de persistence context açık olduğu için lazy yükleme controller'da yapılabiliyordu. Ayar kapanınca persistence context transaction ile birlikte kapanıyor." } }
+  - { id: r3, weight: 2, required: true, point: { tr: "Gereken veriyi transaction içinde yükleyen bir çözüm seçer ve nedenini söyler. Seçenekler: repository'de `@EntityGraph(attributePaths = \"items\")` veya `left join fetch` ile koleksiyonu siparişle birlikte getirmek; ya da `OrderResponse`'a dönüşümü servis içinde, transaction açıkken yapıp controller'a DTO dönmek. Gerekçe örneği: bu endpoint'in neyi yükleyeceği açıkça görünür, sorgu sayısı belli olur." } }
+  - { id: r4, weight: 2, point: { tr: "Kolay ama kötü 'çözümlerden' en az birinin bedelini söyler: open-in-view'ı tekrar açmak sorunu gizler (controller'da ve JSON yazılırken fark edilmeyen sorgular, gizli N+1, veritabanı bağlantısının isteğin sonuna kadar tutulabilmesi); `FetchType.EAGER` koleksiyonu gerekmeyen her yerde yükler." } }
+misconceptions:
+  - { id: m1, text: { tr: "Hatayı koleksiyonun boş olmasına veya veritabanında sipariş kalemi bulunmamasına bağlar." } }
+  - { id: m2, text: { tr: "`@Transactional(readOnly = true)`'nun lazy yüklemeyi engellediğini söyler ve çözüm olarak `readOnly`'yi kaldırmayı önerir." } }
+  - { id: m3, text: { tr: "Ana çözüm olarak open-in-view'ı tekrar açmayı veya `items`'ı `FetchType.EAGER` yapmayı önerir ve bedelini tartışmaz." } }
+pass: { minScore: 5, requireAll: [r1, r3] }   # r1 + r3 = 4; ek olarak r2 (open-in-view) veya en az kısmi r4 (bedel) gerekir
+followUps:
+  - ifMissing: r3
+    prompt: { tr: "open-in-view'ı tekrar açmadan bu endpoint'i nasıl düzeltirdin? Hangi veriyi nerede yüklerdin?" }
+  - ifMissing: r4
+    prompt: { tr: "Bir takım arkadaşın en kolay yolun open-in-view'ı tekrar açmak olduğunu söylüyor. Bunun bedeli ne?" }
+modelAnswer:
+  tr: |
+    `items` LAZY bir koleksiyon; `findById` yalnız siparişi yükler. `getOrder()` dönünce transaction
+    biter ve open-in-view kapalıyken persistence context (Session) de kapanır; `order` detached olur.
+    Controller `getItems()` üzerinde dolaşınca Hibernate koleksiyonu yükleyecek açık bir Session
+    bulamaz ve `LazyInitializationException` fırlatır.
+
+    Önceden çalışmasının sebebi open-in-view: Spring Boot web uygulamalarında varsayılan olarak açıktır,
+    EntityManager isteğin sonuna kadar açık kalır ve lazy yükleme controller'da yapılabilir.
+
+    Seçimim, gereken veriyi transaction içinde bilinçli olarak yüklemek:
+
+    ```java
+    @EntityGraph(attributePaths = "items")
+    Optional<Order> findWithItemsById(Long id);
+    ```
+
+    Servis bu metodu kullanır; daha da iyisi dönüşümü serviste yapıp controller'a DTO dönmek. Böylece
+    endpoint'in ne yüklediği görünür ve sorgu sayısı belli olur.
+
+    open-in-view'ı tekrar açmak sorunu gizler: sorgular controller'da ve JSON yazılırken fark
+    edilmeden çalışır, N+1 saklanır, bağlantı isteğin sonuna kadar tutulabilir. EAGER ise koleksiyonu
+    gerekmeyen her yerde yükler.
+explanation:
+  tr: |
+    Detached bir entity'nin yüklenmemiş lazy ilişkisine persistence context kapandıktan sonra
+    erişilemez. Spring Boot 3'te `spring.jpa.open-in-view` web uygulamalarında varsayılan olarak
+    `true`'dur; ayar açıkça verilmediğinde açılışta "spring.jpa.open-in-view is enabled by default"
+    diye başlayan bir uyarı loglanır. Bu yüzden `LazyInitializationException` çoğu projede ayar
+    kapatıldığında ortaya çıkar. Kalıcı çözüm, her kullanım senaryosunun ihtiyaç duyduğu veriyi servis
+    katmanında bilinçli olarak yüklemektir. `join fetch` ile koleksiyon getirilirken `left join fetch`
+    kullanılmalıdır; düz `join fetch` kalemi olmayan siparişi hiç döndürmez. Hibernate'in
+    `hibernate.enable_lazy_load_no_trans` ayarı her erişimde geçici bir Session açarak hatayı susturur,
+    ama Hibernate de önermez; sorunu gizler ve her erişimde ayrı sorgu çalıştırır.
+revealsAnswerOf: [jpa-transaction.fetching.default-fetch-types]   # kod ve hata mesajı @OneToMany'nin varsayılan olarak LAZY olduğunu gösteriyor
+resources: [hibernate-user-guide, spring-docs-transactions]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

@@ -1,0 +1,42 @@
+id: spring-core.boot-autoconfig.profiles
+version: 2
+topic: spring-core
+subtopic: boot-autoconfig
+level: 2
+type: mc
+tags: [profiles]
+prompt:
+  tr: |
+    `application.yml`:
+
+    ```yaml
+    spring.datasource.url: jdbc:h2:mem:dev
+    logging.level.root: DEBUG
+    ```
+
+    `application-prod.yml`:
+
+    ```yaml
+    spring.datasource.url: jdbc:postgresql://db:5432/shop
+    ```
+
+    Uygulama canlıda `SPRING_PROFILES_ACTIVE=prod` ile başlatılıyor. Hangi veritabanına bağlanır ve
+    log seviyesi ne olur?
+options:
+  - id: a
+    text: "PostgreSQL'e bağlanır, log seviyesi DEBUG kalır: profil dosyası yalnız kendi yazdığı anahtarlarda `application.yml`'ı ezer."
+    correct: true
+  - id: b
+    text: "PostgreSQL'e bağlanır, log seviyesi varsayılan INFO olur: `prod` aktifken `application.yml` hiç okunmaz."
+    misconception: { tr: "Profil dosyasının ortak dosyanın yerine geçtiğini sanıyor. İki dosya birlikte yüklenir; profil dosyası yalnız aynı anahtarlarda kazanır." }
+  - id: c
+    text: "H2'ye bağlanır, log seviyesi DEBUG olur: `application.yml` ana dosyadır, profil dosyası yalnız yeni anahtar ekleyebilir."
+    misconception: { tr: "Önceliği tersine çeviriyor. Aynı anahtar iki dosyada varsa profil dosyasındaki değer kullanılır." }
+  - id: d
+    text: "Uygulama açılmaz: aynı anahtar iki dosyada farklı değerle tanımlandığı için Boot hangisini seçeceğini bilemez."
+    misconception: { tr: "Aynı anahtarın iki kaynakta olmasını hata sanıyor. Boot property kaynaklarını belirli bir öncelik sırasıyla birleştirir." }
+explanation:
+  tr: "Profil, aynı uygulamanın farklı ortamlarda (geliştirme, test, canlı) kod değişmeden farklı ayarlarla çalışmasını sağlayan bir etikettir. Ortama özel ayarlar `application-{profil}.yml` dosyalarına yazılır, hangi profilin aktif olacağı da dışarıdan verilir (`SPRING_PROFILES_ACTIVE=prod` ortam değişkeni veya `--spring.profiles.active=prod`). Aktif profil verildiğinde Boot hem `application.yml`'ı hem `application-prod.yml`'ı yükler; aynı anahtarda profil dosyası kazanır, diğer anahtarlar ortak dosyadan gelir. Bu yüzden canlıda istenmeyen bir değer (burada DEBUG log) ortak dosyadan sızabilir. Ortama özel her değeri profil dosyasına yazmak ya da ortak dosyada güvenli varsayılanlar tutmak gerekir."
+resources: [spring-boot-docs-profiles, spring-boot-docs-external-config]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

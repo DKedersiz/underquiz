@@ -1,0 +1,39 @@
+id: jpa-transaction.transactions.read-only
+version: 2
+topic: jpa-transaction
+subtopic: transactions
+level: 2
+type: mc
+tags: [transactional, read-only, performance]
+prompt:
+  tr: |
+    ```java
+    @Service
+    public class ProductQueryService {
+
+        @Transactional(readOnly = true)
+        public List<ProductDto> listProducts() {
+            // yalnızca okuma yapan sorgular
+        }
+    }
+    ```
+
+    Yalnız okuma yapan bu metotta `readOnly = true` kullanmanın asıl amacı nedir?
+options:
+  - id: a
+    text: "Metot hiç transaction açılmadan çalışır; `readOnly`, 'bu metot için transaction başlatma' anlamına gelir."
+    misconception: { tr: "`readOnly`'nin transaction'ı kapattığını sanıyor. Transaction yine açılır (varsayılan propagation `REQUIRED`); yalnızca salt okunur olarak işaretlenir." }
+  - id: b
+    text: "Okunan satırlar transaction bitene kadar kilitlenir; böylece başka işlemler bu verileri o sırada değiştiremez."
+    misconception: { tr: "`readOnly`'yi kilitleme veya isolation ile karıştırıyor. `readOnly` başka transaction'ların yazmasını engellemez; kilitler ve hangi değişikliklerin görüleceği isolation seviyesi ve lock ayarlarıyla belirlenir." }
+  - id: c
+    text: "Transaction'ın veri değiştirmeyeceğini bildirir; Hibernate gibi altyapılar buna göre optimize eder (ör. flush'ı atlar)."
+    correct: true
+  - id: d
+    text: "Metodun sonucunu önbelleğe alır; aynı parametreyle yapılan ikinci çağrıda sorgular veritabanına gönderilmez, sonuç bellekten döner."
+    misconception: { tr: "`readOnly`'yi önbellekle (`@Cacheable` veya sorgu önbelleği) karıştırıyor. `readOnly` sonuç saklamaz; metot her çağrıldığında sorgular yeniden çalışır. Sonuçları önbelleğe almak ayrı bir mekanizmadır ve ayrıca yapılandırılır." }
+explanation:
+  tr: "`readOnly = true`, altyapıya 'bu transaction veri değiştirmeyecek' ipucunu verir. Hibernate ile kullanıldığında flush modu `MANUAL` olur ve değişiklik kontrolü atlanır; Spring ayrıca JDBC bağlantısını read-only işaretler, bazı veritabanları da buna göre optimizasyon yapar. Spring'e göre bu yalnız bir ipucudur: yazma girişimini her zaman engellemez. Bazı veritabanları (ör. PostgreSQL) read-only transaction'da yazmayı reddeder, ama bu bir güvenlik önlemi sayılmaz; erişim kontrolü veritabanı kullanıcı yetkileriyle yapılır. Sorgu yapan servis metotlarında kullanılması yaygın bir iyi uygulamadır. Spring Data JPA'nın hazır okuma metotları (`findById`, `findAll` vb.) zaten `readOnly = true` ile çalışır."
+resources: [spring-docs-transactions, spring-data-jpa-transactions]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

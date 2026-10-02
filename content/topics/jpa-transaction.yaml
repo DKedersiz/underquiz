@@ -1,0 +1,63 @@
+id: jpa-transaction
+domain: backend-fundamentals
+title: { tr: "JPA & Transaction" }
+subtopics:
+  - { id: orm-basics,          title: { tr: "ORM, JPA ve Hibernate temelleri; entity ve id" } }
+  - { id: entity-mapping,      title: { tr: "İlişkiler, owning side, cascade ve orphanRemoval" } }
+  - { id: fetching,            title: { tr: "Lazy/eager, N+1, LazyInitializationException" } }
+  - { id: persistence-context, title: { tr: "Entity durumları, persistence context, dirty checking" } }
+  - { id: transactions,        title: { tr: "@Transactional kullanımı, rollback, propagation, isolation" } }
+levels:
+  1: { tr: "ORM ve JPA'nın ne olduğunu, entity/id ve temel anotasyonları tanır." }
+  2: { tr: "İlişkileri ve @Transactional'ı doğru kullanır; varsayılan fetch ve rollback davranışını, propagation'ın temel davranışını (mevcut transaction'a katılma / ayrı transaction açma) bilir." }
+  3: { tr: "Persistence context'in ve fetch stratejilerinin nasıl çalıştığını açıklar; N+1 ve LazyInitializationException'ı teşhis eder." }
+  4: { tr: "Propagation, isolation ve cascade seçimlerinin sonuçlarını tartar; gerçek senaryoda gerekçeli seçim yapar (güçlü junior)." }
+resources:
+  - id: jakarta-persistence-spec
+    title: "Jakarta Persistence 3.1 Specification"
+    url: "https://jakarta.ee/specifications/persistence/3.1/"
+    kind: docs
+    lang: en
+    levels: [1, 2, 3, 4]
+  - id: spring-docs-transactions
+    title: "Spring Framework Reference: Transaction Management"
+    url: "https://docs.spring.io/spring-framework/reference/data-access/transaction.html"
+    kind: docs
+    lang: en
+    levels: [2, 3, 4]
+  - id: hibernate-user-guide
+    title: "Hibernate ORM User Guide"
+    url: "https://docs.jboss.org/hibernate/orm/6.6/userguide/html_single/Hibernate_User_Guide.html"
+    kind: docs
+    lang: en
+    levels: [2, 3, 4]
+  - id: spring-data-jpa-transactions
+    title: "Spring Data JPA Reference: Transactionality"
+    url: "https://docs.spring.io/spring-data/jpa/reference/jpa/transactions.html"
+    kind: docs
+    lang: en
+    levels: [2, 3]
+  - id: spring-docs-tx-propagation
+    title: "Spring Framework Reference: Transaction Propagation"
+    url: "https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/tx-propagation.html"
+    kind: docs
+    lang: en
+    levels: [2, 3, 4]
+  - id: spring-data-jpa-locking
+    title: "Spring Data JPA Reference: Locking"
+    url: "https://docs.spring.io/spring-data/jpa/reference/jpa/locking.html"
+    kind: docs
+    lang: en
+    levels: [2, 3, 4]
+  - id: spring-data-jpa-persisting
+    title: "Spring Data JPA Reference: Persisting Entities"
+    url: "https://docs.spring.io/spring-data/jpa/reference/jpa/entity-persistence.html"
+    kind: docs
+    lang: en
+    levels: [2, 3]
+  - id: postgresql-transaction-isolation
+    title: "PostgreSQL Documentation: Transaction Isolation"
+    url: "https://www.postgresql.org/docs/current/transaction-iso.html"
+    kind: docs
+    lang: en
+    levels: [3, 4]

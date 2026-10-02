@@ -1,0 +1,52 @@
+id: spring-core.proxy-aop.self-invocation
+version: 2   # v2 (2026-09-30): soruya "nasıl düzeltirsin" eklendi; v1 çözüm istemediği hâlde r4 çözümü puanlıyordu (pilot analizi tur 1)
+topic: spring-core
+subtopic: proxy-aop
+level: 3
+type: open
+tags: [transactional]
+answerHint: medium
+prompt:
+  tr: |
+    `OrderService` sınıfında `placeOrder()` metodu, aynı sınıftaki `@Transactional` işaretli
+    `saveOrder()` metodunu çağırıyor. `placeOrder()`'ın kendisinde `@Transactional` yok.
+
+    ```java
+    @Service
+    public class OrderService {
+        public void placeOrder(Order o) {
+            validate(o);
+            saveOrder(o);
+        }
+
+        @Transactional
+        public void saveOrder(Order o) { /* birden fazla repository çağrısı */ }
+    }
+    ```
+
+    Controller `placeOrder()`'ı çağırdığında `saveOrder()` bir transaction içinde çalışır mı? Neden?
+    Çalışmıyorsa nasıl düzeltirsin?
+rubric:
+  - { id: r1, weight: 2, required: true, point: { tr: "Hayır, varsayılan (proxy tabanlı) yapılandırmada transaction başlamaz." } }
+  - { id: r2, weight: 2, required: true, point: { tr: "Sebep: Spring bean'i bir proxy ile sarar; @Transactional davranışı yalnızca proxy üzerinden gelen çağrılara uygulanır." } }
+  - { id: r3, weight: 1, point: { tr: "İç çağrı `this` üzerinden yapıldığı için proxy'yi atlar (self-invocation)." } }
+  - { id: r4, weight: 1, point: { tr: "En az bir çözüm önerir: metodu ayrı bir bean'e taşımak, dış metodu @Transactional yapmak, TransactionTemplate kullanmak veya AspectJ weaving." } }
+misconceptions:
+  - { id: m1, text: { tr: "Anotasyon metodun üzerinde olduğu için her durumda çalışacağını söyler." } }
+  - { id: m2, text: { tr: "Sorunu veritabanı veya connection ayarlarına bağlar." } }
+pass: { minScore: 4, requireAll: [r1, r2] }
+followUps:
+  - ifMissing: r4
+    prompt: { tr: "Bu metodun gerçekten bir transaction içinde çalışmasını sağlamak için ne yapardın?" }
+modelAnswer:
+  tr: |
+    Çalışmaz. Spring, @Transactional davranışını bean'i saran bir proxy ile uygular. Controller
+    `placeOrder()`'ı proxy üzerinden çağırır, ama `placeOrder()` içinden yapılan `saveOrder()`
+    çağrısı `this` üzerinden gider ve proxy'yi atlar (self-invocation). Bu yüzden transaction açılmaz.
+    Çözümler: `saveOrder()`'ı ayrı bir bean'e taşımak, `placeOrder()`'ı @Transactional yapmak,
+    programatik olarak TransactionTemplate kullanmak veya AspectJ weaving'e geçmek.
+explanation:
+  tr: "Bu, @Transactional, @Async, @Cacheable gibi proxy tabanlı tüm anotasyonlar için geçerli bir kuraldır."
+resources: [spring-docs-aop, spring-docs-transactional]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

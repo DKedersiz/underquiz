@@ -1,0 +1,27 @@
+id: jpa-transaction.entity-mapping.many-to-one
+version: 1
+topic: jpa-transaction
+subtopic: entity-mapping
+level: 1
+type: mc
+tags: [relationships, many-to-one]
+prompt:
+  tr: "Bir müşterinin (`Customer`) birden çok siparişi olabilir; her sipariş (`Order`) ise tek bir müşteriye aittir. `Order` sınıfındaki `private Customer customer;` alanı için doğru eşleme hangisidir?"
+options:
+  - id: a
+    text: "`@OneToMany`, çünkü ilişkinin bir ucunda tek müşteri, diğer ucunda o müşterinin birden çok siparişi var."
+    misconception: { tr: "İlişkiyi karşı taraftan okuyor. Anotasyon, alanın bulunduğu sınıftan bakılarak seçilir: birçok sipariş tek bir müşteriye bağlanır, yani `Order` tarafında `@ManyToOne`. `@OneToMany` istenirse `Customer` sınıfındaki sipariş koleksiyonuna konur." }
+  - id: b
+    text: "`@OneToOne`, çünkü bir siparişin yalnızca tek bir müşterisi olabilir ve bu müşteri sonradan değişmez."
+    misconception: { tr: "İlişkiye yalnız bir yönden bakıyor. Her siparişin tek müşterisi olması yetmez; aynı müşteri birden çok siparişte yer alabildiği için ilişki one-to-one değil many-to-one'dır." }
+  - id: c
+    text: "`@ManyToOne`; sipariş tablosunda müşteriyi gösteren bir foreign key (`customer_id`) tutulur."
+    correct: true
+  - id: d
+    text: "`@ManyToMany`, çünkü sistemde hem birçok müşteri hem de birçok sipariş kaydı aynı anda bulunur."
+    misconception: { tr: "Tablodaki kayıt sayısını ilişki türüyle karıştırıyor. İlişki türü toplam satır sayısına göre değil, bir siparişin kaç müşteriye ve bir müşterinin kaç siparişe bağlanabildiğine göre belirlenir." }
+explanation:
+  tr: "Anotasyon adı, alanın bulunduğu sınıftan hedefe doğru okunur: 'birçok Order → bir Customer', yani `@ManyToOne`. İlişkisel veritabanında bu, 'çok' tarafın tablosundaki bir foreign key kolonuyla tutulur. Varsayılan kolon adı alan adı + `_` + hedefin birincil anahtar kolonudur (`customer_id`); istersen `@JoinColumn` ile değiştirirsin. Müşteriden siparişlere de gitmek istersen `Customer` sınıfına `@OneToMany(mappedBy = \"customer\")` eklenir."
+resources: [jakarta-persistence-spec]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

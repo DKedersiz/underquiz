@@ -1,0 +1,32 @@
+id: spring-core.boot-autoconfig.configuration-properties
+version: 2
+topic: spring-core
+subtopic: boot-autoconfig
+level: 4
+type: mc
+tags: [configuration-properties]
+prompt:
+  tr: |
+    Bildirim sağlayıcısının URL'si, zaman aşımı, deneme sayısı ve API anahtarı dört farklı sınıfta
+    `@Value("${notification.timeout:5000}")` gibi varsayılan değerli ifadelerle okunuyor. Canlıda bir
+    anahtar `application-prod.yml`'da yanlış yazıldı; uygulama hata vermeden varsayılan değerle çalıştı
+    ve sorun günler sonra fark edildi. Birim testte de bu sınıflar her alan elle set edilmeden
+    kurulamıyor. En uygun düzeltme hangisi?
+options:
+  - id: a
+    text: "Ayarları tek bir `@ConfigurationProperties(prefix = \"notification\")` sınıfında tipli alanlarla toplamak, `@Validated` ve kısıt anotasyonlarıyla zorunlu kılmak; servisler bu nesneyi constructor ile alır."
+    correct: true
+  - id: b
+    text: "Ayarları `@ConfigurationProperties` sınıfına taşımak yeterli; bu sınıf bilinmeyen veya yanlış yazılmış anahtarları zaten reddeder, doğrulama gerekmez."
+    misconception: { tr: "`@ConfigurationProperties`'in yanlış anahtarı yakaladığını sanıyor. Bilinmeyen anahtarlar varsayılan olarak yok sayılır ve alan boş kalır. Eksik değeri açılışta yakalayan, `@Validated` ile eklenen kısıtlardır." }
+  - id: c
+    text: "Her sınıfta `Environment.getProperty(...)` ile okumak; değer bulunamazsa `null` döner ve hata hemen görünür."
+    misconception: { tr: "Sorunu `@Value`'nun kendisinde sanıyor. Anahtarlar hâlâ string olarak dört sınıfa dağılmış, tip elle çevriliyor ve `null` açılışta değil kullanıldığı anda görünüyor." }
+  - id: d
+    text: "Ayarları bir `Constants` sınıfında `static final` alanlar olarak tutmak; tek yerde olur ve yazım hatası derlemede yakalanır."
+    misconception: { tr: "Yapılandırmayı koda taşımayı çözüm sanıyor. Ortam başına değer değiştirmek yeniden derleme ister; profil ve ortam değişkenleri devre dışı kalır, API anahtarı koda girer." }
+explanation:
+  tr: "`@ConfigurationProperties` ilişkili ayarları tipli tek bir sınıfta toplar. Bilinmeyen anahtarları varsayılan olarak yok saydığı için tek başına yanlış yazımı yakalamaz; alanlara `@NotBlank`, `@Positive` gibi kısıtlar koyup sınıfı `@Validated` ile işaretlemek eksik veya geçersiz değeri açılışta hataya çevirir. Servisler nesneyi constructor ile aldığı için testte `new` ile verilir. Dağınık `@Value` ifadelerine konan varsayılan değerler ise yanlış yazılmış bir anahtarı sessizce gizler. Not: varsayılan değeri olmayan bir `@Value(\"${x}\")` çözülemezse uygulama zaten açılışta hata verir; sorunu sessiz kılan, varsayılan değerdir."
+resources: [spring-boot-docs-external-config]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

@@ -1,0 +1,50 @@
+id: jpa-transaction.transactions.service-boundary
+version: 1
+topic: jpa-transaction
+subtopic: transactions
+level: 2
+type: mc
+tags: [transactional, service-layer, spring-data-jpa]
+prompt:
+  tr: |
+    Para transferi yapan servis metodunda `@Transactional` yok (sınıfta da yok):
+
+    ```java
+    @Service
+    public class TransferService {
+        private final AccountRepository accountRepository; // Spring Data JPA repository
+
+        // constructor
+
+        public void transfer(Long fromId, Long toId, BigDecimal amount) {
+            Account from = accountRepository.findById(fromId).orElseThrow();
+            Account to = accountRepository.findById(toId).orElseThrow();
+
+            from.withdraw(amount);
+            accountRepository.save(from);
+
+            to.deposit(amount);   // hesap kapalıysa IllegalStateException fırlatır
+            accountRepository.save(to);
+        }
+    }
+    ```
+
+    `to.deposit()` bir `IllegalStateException` fırlatırsa ne olur ve doğru düzeltme nedir?
+options:
+  - id: a
+    text: "Hiçbir değişiklik kaydedilmez, çünkü `@Transactional` olmadan repository'ler veritabanına yazamaz; anotasyon eklenince kod çalışır."
+    misconception: { tr: "Repository'lerin yazmak için dışarıdan bir transaction'a ihtiyaç duyduğunu sanıyor. Spring Data JPA'da `save()` gibi metotlar zaten kendi transaction'ında çalışır; bu yüzden ilk `save()` tek başına commit edilir." }
+  - id: b
+    text: "`from`'daki düşüş kalıcı olur, çünkü ilk `save()` kendi transaction'ında commit edildi; `transfer()` `@Transactional` yapılmalı."
+    correct: true
+  - id: c
+    text: "İki değişiklik de geri alınır, çünkü exception aynı metodun içinde fırladı; bu yüzden kod bu hâliyle doğru çalışır."
+    misconception: { tr: "Bir metodun kendiliğinden bir transaction olduğunu sanıyor. Transaction'ı metot değil, `@Transactional` (veya programatik transaction yönetimi) başlatır; anotasyon yoksa her repository çağrısı ayrı commit edilir." }
+  - id: d
+    text: "`from`'daki düşüş kalıcı olur; `AccountRepository` arayüzündeki metotların her birine ayrıca `@Transactional` eklenmelidir."
+    misconception: { tr: "Transaction sınırını yanlış katmanda arıyor. Repository metotları zaten tek tek transactional'dır; her birine anotasyon koymak onları tek transaction'da birleştirmez. Birleştiren, iki çağrıyı da kapsayan servis metodundaki `@Transactional`'dır." }
+explanation:
+  tr: "Transaction sınırı iş biriminin (burada 'transfer') sınırı olmalıdır; bu da genellikle birden çok repository çağrısını yöneten servis metodudur. Spring Data JPA'da `CrudRepository` metotları varsayılan olarak kendi transaction'larında çalışır (okuma metotları `readOnly = true` ile). Servis metodu `@Transactional` olunca repository çağrıları bu transaction'a katılır ve `IllegalStateException` gibi bir `RuntimeException` iki değişikliği de geri aldırır."
+resources: [spring-docs-transactions]   # önerilen ek: spring-data-jpa-transactions (dosya sonunda)
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

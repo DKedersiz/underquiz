@@ -1,0 +1,44 @@
+id: spring-core.ioc-di.primary-qualifier
+version: 2
+topic: spring-core
+subtopic: ioc-di
+level: 3
+type: mc
+tags: [qualifier, primary]
+revealsAnswerOf: [spring-core.ioc-di.multiple-candidates]   # multiple-candidates'in metni @Primary/@Qualifier adlarını veriyor
+prompt:
+  tr: |
+    Projede `FileStorage` interface'inin tek implementasyonu `LocalDiskStorage` ve beş farklı servis
+    onu constructor ile `FileStorage` tipinde alıyor. Faturaları arşivleyen yeni `InvoiceArchiveService`
+    ise dosyaları S3'e yazmalı; bunun için `S3Storage` adlı ikinci bir `@Component` implementasyonu
+    ekleyeceksin. Aynı tipte ikinci bir bean eklemenin mevcut enjeksiyon noktalarında sorun
+    çıkaracağını biliyorsun.
+
+    Mevcut beş servisin koduna dokunmadan `InvoiceArchiveService`'e `S3Storage`'ı, diğerlerine
+    `LocalDiskStorage`'ı vermenin en uygun yolu hangisi?
+options:
+  - id: a
+    text: "`LocalDiskStorage`'a `@Primary` ekle; `InvoiceArchiveService`'in constructor parametresine `@Qualifier(\"s3Storage\")` yaz."
+    correct: true
+  - id: b
+    text: "`S3Storage`'ı `@Scope(\"prototype\")` yap; singleton olmayan bean'ler tekil enjeksiyonda aday sayılmadığı için diğer servislerde tek aday kalır."
+    misconception: { tr: "Scope'un aday seçimini etkilediğini sanıyor. Prototype bean de aynı tipte bir adaydır; belirsizlik sürer." }
+  - id: c
+    text: "`spring.main.allow-bean-definition-overriding=true` ayarını aç; böylece Spring aynı tipteki iki tanımdan birini diğerinin yerine kullanır."
+    misconception: { tr: "Bean overriding'i aynı tipte birden fazla bean olmasıyla karıştırıyor. Overriding, aynı isimle yeniden tanımlanan bean içindir; burada isimler farklı ve iki bean de var olmaya devam eder." }
+  - id: d
+    text: "`S3Storage`'a `@Lazy` ekle; lazy bean'ler açılışta oluşturulmadığı için diğer servislerin aday listesine girmez."
+    misconception: { tr: "Lazy initialization'ın aday seçimini etkilediğini sanıyor. `@Lazy` yalnızca oluşturulma zamanını erteler; bean tanımı yine adaydır ve belirsizlik sürer." }
+explanation:
+  tr: |
+    Tekil bir bağımlılık için aynı tipte birden fazla aday varsa Spring bir seçim işareti arar.
+    `@Primary`, özel bir işaret taşımayan tüm enjeksiyon noktalarında `LocalDiskStorage`'ın seçilmesini
+    sağlar; böylece mevcut beş servis değişmeden çalışır. `@Qualifier` aday kümesini daraltır, bu
+    yüzden `InvoiceArchiveService`'te `@Primary`'ye rağmen `S3Storage` gelir. Bean adı varsayılan
+    qualifier değeridir (`S3Storage` sınıfı için `s3Storage`). Spring 6.2 (Boot 3.4+) ile gelen
+    `@Fallback`, ikincil bean'i işaretlemenin alternatif bir yoludur. Parametre adını bean adıyla aynı
+    yapmaya (`s3Storage`) güvenmek `@Primary` varken işe yaramaz; isim eşleştirmesi yalnızca başka
+    hiçbir işaret yokken son çaredir.
+resources: [spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

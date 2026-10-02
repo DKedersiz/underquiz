@@ -1,0 +1,30 @@
+id: spring-core.boot-autoconfig.spring-vs-boot
+version: 2
+topic: spring-core
+subtopic: boot-autoconfig
+level: 1
+type: mc
+prompt:
+  tr: |
+    Yeni katılan bir takım arkadaşın şöyle diyor: "Zaten Spring Boot kullanıyoruz, Spring
+    Framework'ü ayrıca öğrenmemize gerek yok; Boot her şeyi kendi başına halleder."
+
+    Spring Boot ile Spring Framework arasındaki ilişki gerçekte nedir?
+options:
+  - id: a
+    text: "Spring Boot, Spring Framework'ün üstüne kurulur; bean, dependency injection ve AOP gibi temel mekanizmalar Framework'ten gelir. Boot bunlara auto-configuration ve starter bağımlılıkları ekler."
+    correct: true
+  - id: b
+    text: "Spring Boot, Framework'ün yerini alan ayrı bir üründür; Boot projelerinde bean ve dependency injection Boot'un kendi container'ıyla sağlanır."
+    misconception: { tr: "Boot'u Framework'ün yerini alan bağımsız bir ürün sanıyor. `ApplicationContext`, `@Component`, `@Transactional` gibi kullandığın sınıf ve anotasyonların hepsi hâlâ Spring Framework'e ait; Boot bunları değiştirmez, yalnızca yapılandırmalarını kolaylaştırır." }
+  - id: c
+    text: "Spring Boot yalnızca web uygulamaları içindir; web sunucusu olmayan bir uygulamada (ör. zamanlanmış toplu işler) Boot kullanılamaz, Framework'ü doğrudan yapılandırmak gerekir."
+    misconception: { tr: "Boot'u yalnızca web ile sınırlı sanıyor. Boot web olmayan uygulamalarda da aynı şekilde çalışır; gömülü sunucu yalnızca web starter'ı eklendiğinde devreye girer." }
+  - id: d
+    text: "Spring Boot, Framework'ün sadeleştirilmiş bir alt kümesidir; AOP ve transaction yönetimi gibi bazı özellikler Boot projelerinde yoktur, bunlar için ayrı bir Spring projesi gerekir."
+    misconception: { tr: "Boot'u Framework'ün küçültülmüş bir sürümü sanıyor. Boot projeleri Framework'ün tüm özelliklerini (DI, AOP, transaction yönetimi dahil) olduğu gibi kullanır; Boot hiçbir temel mekanizmayı çıkarmaz." }
+explanation:
+  tr: "Spring Boot bağımsız bir framework değildir; Spring Framework'ün üstüne inşa edilir ve onun IoC/DI/AOP altyapısını olduğu gibi kullanır. Boot'un asıl katkısı, auto-configuration, starter bağımlılıklar ve gömülü sunucu ile kurulum ve yapılandırma yükünü azaltmaktır."
+resources: [spring-boot-docs-autoconfig, spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

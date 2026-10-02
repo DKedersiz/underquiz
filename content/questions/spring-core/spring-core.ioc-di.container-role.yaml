@@ -1,0 +1,26 @@
+id: spring-core.ioc-di.container-role
+version: 1
+topic: spring-core
+subtopic: ioc-di
+level: 1
+type: mc
+prompt:
+  tr: "Spring'in IoC container'ı (ApplicationContext) bir uygulamada temel olarak ne iş yapar?"
+options:
+  - id: a
+    text: "Gelen HTTP isteklerini karşılar ve her isteği ilgili controller metoduna yönlendirir."
+    misconception: { tr: "Container'ı web katmanıyla (DispatcherServlet) karıştırıyor. İstekleri yönlendirmek Spring MVC'nin işidir; container web olmayan uygulamalarda da aynı şekilde çalışır." }
+  - id: b
+    text: "Sınıflar arasındaki bağımlılıkları ortadan kaldırır; hiçbir sınıf başka bir sınıfı kullanmak zorunda kalmaz."
+    misconception: { tr: "Dependency injection'ın bağımlılığı yok ettiğini sanıyor. Sınıf bağımlılığını hâlâ kullanır; değişen, o bağımlılığı kimin oluşturup sınıfa verdiğidir." }
+  - id: c
+    text: "Bean'leri oluşturur, bağımlılıklarını birbirine bağlar ve yaşam döngülerini yönetir."
+    correct: true
+  - id: d
+    text: "Projedeki her sınıftan otomatik olarak bir nesne oluşturur ve bu nesneleri yönetir."
+    misconception: { tr: "Her sınıfın bean olduğunu sanıyor. Yalnız component taramasında bulunan (`@Component`, `@Service` vb.) veya `@Bean` ile tanımlanan nesneler bean olur; `new` ile oluşturduğun nesneleri container yönetmez." }
+explanation:
+  tr: "IoC'de nesneleri oluşturma ve birbirine bağlama kontrolü sınıflardan alınıp container'a verilir; 'inversion' buradan gelir. Container bean'leri oluşturur, bağımlılıklarını enjekte eder (DI) ve yaşam döngülerini yönetir. Hangi nesnelerin bean olacağını senin verdiğin yapılandırma (anotasyonlar, `@Bean` metotları) belirler."
+resources: [spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

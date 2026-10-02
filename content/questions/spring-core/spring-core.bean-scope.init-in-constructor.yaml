@@ -1,0 +1,45 @@
+id: spring-core.bean-scope.init-in-constructor
+version: 1
+topic: spring-core
+subtopic: bean-scope-lifecycle
+level: 2
+type: mc
+tags: [lifecycle]
+prompt:
+  tr: |
+    `CityCache`, uygulama açılırken şehir listesini bir kez yüklemek için yazılmış:
+
+    ```java
+    @Service
+    public class CityCache {
+
+        @Autowired
+        private CityRepository cityRepository;
+
+        private List<City> cities;
+
+        public CityCache() {
+            cities = cityRepository.findAll();
+        }
+    }
+    ```
+
+    Uygulama başlarken bu constructor'da `NullPointerException` fırlatılıyor. Sebep ve düzeltme hangisidir?
+options:
+  - id: a
+    text: "`CityRepository` bean olarak bulunamadığı için Spring alanı null bıraktı; repository'ye `@Component` eklenmeli."
+    misconception: { tr: "Bean bulunamayınca Spring'in alanı sessizce null bıraktığını sanıyor. Zorunlu bir bağımlılık bulunamazsa uygulama 'bean bulunamadı' hatasıyla açılmaz; buradaki null sıralamadan kaynaklanıyor." }
+  - id: b
+    text: "`@Autowired` `private` alanlara değer atayamaz; alan `public` yapılırsa Spring onu doldurabilir."
+    misconception: { tr: "Spring'in private alanlara erişemediğini sanıyor. Spring alan enjeksiyonunu reflection ile yapar; alanın private olması engel değildir." }
+  - id: c
+    text: "Constructor'a da `@Autowired` eklenirse Spring alanları constructor'dan önce doldurur ve sorun çözülür."
+    misconception: { tr: "Alanların nesne oluşturulmadan önce doldurulabileceğini sanıyor. Nesne constructor ile oluşur, alan enjeksiyonu ondan sonra yapılır; constructor'a `@Autowired` eklemek bu sırayı değiştirmez." }
+  - id: d
+    text: "Alanlar constructor'dan sonra enjekte edilir; repository constructor ile alınmalı ya da yükleme `@PostConstruct`'a taşınmalı."
+    correct: true
+explanation:
+  tr: "Spring önce constructor ile nesneyi oluşturur, sonra `@Autowired` alanlarını doldurur, en son `@PostConstruct` metodunu çağırır. Bağımlılık gerektiren başlangıç işi constructor'da değil `@PostConstruct` metodunda yapılmalıdır. Başka bir çözüm de `CityRepository`'yi constructor parametresi olarak almaktır (constructor injection); o zaman bağımlılık constructor içinde hazır olur."
+resources: [spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

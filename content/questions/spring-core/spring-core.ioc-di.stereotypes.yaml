@@ -1,0 +1,27 @@
+id: spring-core.ioc-di.stereotypes
+version: 2
+topic: spring-core
+subtopic: ioc-di
+level: 1
+type: mc
+tags: [stereotype]
+prompt:
+  tr: "Bir takım arkadaşın `@Service` ile işaretli `InvoiceService` sınıfının anotasyonunu `@Component` yaptı. Uygulamanın davranışında ne değişir?"
+options:
+  - id: a
+    text: "Hiçbir şey değişmez; ikisi de component scan ile bulunan bir bean üretir. `@Service` yalnız sınıfın servis katmanında olduğunu belirtir."
+    correct: true
+  - id: b
+    text: "Metotlar artık transaction içinde çalışmaz; `@Service` sınıftaki public metotları kendiliğinden bir transaction'a alır."
+    misconception: { tr: "`@Service`'in transaction açtığını sanıyor. Transaction'ı `@Transactional` sağlar; `@Service` davranış eklemez." }
+  - id: c
+    text: "Sınıf artık singleton olmaz; `@Component` her enjeksiyonda yeni nesne verir, `@Service` ise tek nesne tutar."
+    misconception: { tr: "Stereotype anotasyonunun scope'u belirlediğini sanıyor. Scope `@Scope` ile verilir; dördü de varsayılan olarak singleton'dır." }
+  - id: d
+    text: "Uygulama açılmaz; servis bekleyen enjeksiyon noktaları yalnız `@Service` ile işaretli bean'leri kabul eder."
+    misconception: { tr: "Enjeksiyonun anotasyon adına göre yapıldığını sanıyor. Spring adaylara tiplerine göre bakar; stereotype'ın türü önemli değildir." }
+explanation:
+  tr: "`@Component`, `@Service`, `@Repository` ve `@Controller` component scan tarafından bulunur ve dördü de bean üretir. `@Service` bugün ek davranış getirmez; sınıfın rolünü anlatır. İkisinin gerçek bir etkisi vardır: `@Repository` bean'lerinde sürücüye özgü exception'lar Spring'in `DataAccessException` hiyerarşisine çevrilir; Spring MVC de istekleri yalnız `@Controller` (ve `@RestController`) bean'lerindeki metotlara yönlendirir."
+resources: [spring-docs-classpath-scanning]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

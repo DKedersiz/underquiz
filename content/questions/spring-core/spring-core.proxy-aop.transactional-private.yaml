@@ -1,0 +1,42 @@
+id: spring-core.proxy-aop.transactional-private
+version: 1
+topic: spring-core
+subtopic: proxy-aop
+level: 2
+type: mc
+tags: [transactional]
+prompt:
+  tr: |
+    Bir takım arkadaşın, dışarıya açmak istemediği bir yardımcı metodu `private` yapıp üzerine
+    `@Transactional` koymuş:
+
+    ```java
+    @Service
+    public class StockService {
+
+        @Transactional
+        private void moveStock(Long fromWarehouseId, Long toWarehouseId, int quantity) {
+            // iki depo kaydını güncelleyen iki repository çağrısı
+        }
+    }
+    ```
+
+    Varsayılan ayarlarla çalışan bir Spring Boot 3 uygulamasında bu anotasyon için ne olur?
+options:
+  - id: a
+    text: "Uygulama açılırken hata alınır; Spring `private` bir metotta `@Transactional` görünce başlatmayı durdurur."
+    misconception: { tr: "Yanlış kullanımın hata vereceğini sanıyor. Spring bu durumda hata vermez, anotasyon sessizce etkisiz kalır. Sorun çoğu zaman ancak bir hata sonrasında verinin yarım kaldığı görülünce fark edilir." }
+  - id: b
+    text: "Transaction normal açılır; Spring `private` alanlara enjekte edebildiği gibi `private` metotları da reflection ile sarabilir."
+    misconception: { tr: "Dependency injection'daki reflection erişimini AOP ile karıştırıyor. Alan enjeksiyonu reflection ile yapılır, ama transaction davranışını ekleyen proxy metodu override ederek araya girer; `private` metot override edilemez." }
+  - id: c
+    text: "Uygulama hatasız çalışır ama anotasyon etkisizdir; proxy `private` metodu override edemediği için transaction açılmaz."
+    correct: true
+  - id: d
+    text: "Transaction açılır, çünkü `@Transactional` derleme sırasında metodun içine transaction açıp kapatan kodu ekler."
+    misconception: { tr: "Anotasyonun derleme sırasında koda dönüştüğünü sanıyor. Anotasyon yalnızca bir işarettir; varsayılan yapılandırmada davranışı çalışma zamanında bean'i saran proxy ekler, sınıfın kendi kodu değişmez." }
+explanation:
+  tr: "Varsayılan yapılandırmada `@Transactional` davranışını bean'i saran bir proxy ekler ve proxy yalnızca override edebildiği metotlarda araya girebilir. Bu yüzden `private` metotlar hiçbir zaman transactional olmaz ve Spring bunun için hata vermez. Doğru kullanım, anotasyonu bean'in dışarıdan çağrılan `public` metoduna koymaktır. Not: CGLIB proxy'lerde (Spring Boot'un varsayılanı) `protected` ve package-private metotlar da transactional olabilir; `private` için kural kesindir."
+resources: [spring-docs-aop, spring-docs-transactional]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

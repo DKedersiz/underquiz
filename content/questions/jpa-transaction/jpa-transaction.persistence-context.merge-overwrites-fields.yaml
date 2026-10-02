@@ -1,0 +1,51 @@
+id: jpa-transaction.persistence-context.merge-overwrites-fields
+version: 2
+topic: jpa-transaction
+subtopic: persistence-context
+level: 3
+type: mc
+tags: [entity-state, merge, spring-data-jpa]
+prompt:
+  tr: |
+    `Product`'ın alanları yalnızca `id` (`@Id @GeneratedValue`, `Long`), `name`, `price`, `stock` (`Integer`)
+    ve `createdAt` (`Instant`). Ürün güncelleme endpoint'ine gelen istek yalnızca `id`, `name` ve `price` taşıyor.
+
+    ```java
+    @Transactional
+    public void update(ProductUpdateRequest request) {
+        Product product = new Product();
+        product.setId(request.id());          // bu id'li ürün veritabanında var
+        product.setName(request.name());
+        product.setPrice(request.price());
+        productRepository.save(product);
+    }
+    ```
+
+    Güncellemeden sonra `name` ve `price` doğru, ama tablodaki `stock` ve `created_at` sütunları `null`
+    oluyor. Sebep ve doğru düzeltme hangisi?
+options:
+  - id: a
+    text: "Id dolu olduğu için `save()` merge yapar: nesnedeki tüm alanlar, boş olanlar da, kayda kopyalanır. Ürünü `findById` ile yükleyip yalnız `name` ve `price`'ı değiştirmek gerekir."
+    correct: true
+  - id: b
+    text: "`save()` yalnız dolu alanları günceller, `null`'lar başka bir yerden geliyor. `stock` ve `createdAt` alanlarına `@Column(nullable = false)` eklemek eski değerlerin korunmasını sağlar."
+    misconception: { tr: "`save()`'in kısmi güncelleme yaptığını sanıyor. Merge nesnenin tüm alanlarını kopyalar. `nullable = false` eski değeri korumaz; yalnız bir kısıttır ve en fazla güncellemenin hata vermesine yol açar." }
+  - id: c
+    text: "Id elle verildiği için Hibernate eski satırı silip aynı id ile yeni bir satır ekler. Id'yi set etmeden nesneyi `save()`'e vermek mevcut satırı koruyarak günceller."
+    misconception: { tr: "Güncellemenin 'sil ve yeniden ekle' olarak yapıldığını sanıyor. Hibernate mevcut satırı UPDATE eder. Id'siz bir nesne ise yeni kayıt sayılır ve tabloya ikinci bir ürün olarak eklenir." }
+  - id: d
+    text: "`stock` ve `createdAt` lazy yüklendiği için güncelleme sırasında okunmadı ve `null` yazıldı. Bu iki alanı `FetchType.EAGER` yapmak eski değerlerin korunmasını sağlar."
+    misconception: { tr: "Sorunu fetch stratejisine bağlıyor. `stock` ve `createdAt` hiç set edilmedi, çünkü nesne `new` ile oluşturuldu. Merge satırı veritabanından okur ama sonra bu boş değerleri okunan kopyanın üzerine yazar; fetch türü bunu değiştirmez. Ayrıca basit alanlar varsayılan olarak zaten hemen yüklenir." }
+explanation:
+  tr: |
+    Spring Data `save()`, entity yeni görünüyorsa `persist()`, değilse `merge()` çağırır; `@Version`
+    alanı yoksa yenilik id'nin `null` olmasına göre belirlenir. Burada id dolu olduğu için `merge()`
+    çalışır: verilen nesnenin durumu, veritabanından yüklenen managed kopyaya olduğu gibi kopyalanır.
+    Set edilmemiş alanlar da `null` olarak kopyalanır ve UPDATE bu değerleri yazar. Merge 'yalnız dolu
+    alanları güncelle' demek değildir. Doğru yol, ürünü `findById` ile yükleyip yalnız istekte gelen
+    alanları değiştirmektir. Managed entity'deki değişiklikleri dirty checking commit öncesinde yazar,
+    istekte olmayan alanlar olduğu gibi kalır. Alanları DTO'dan entity'ye kopyalayan bir mapper
+    kullanılıyorsa da hedef, yüklenmiş entity olmalıdır.
+resources: [spring-data-jpa-persisting, jakarta-persistence-spec, hibernate-user-guide]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

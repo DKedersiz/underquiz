@@ -1,0 +1,28 @@
+id: jpa-transaction.transactions.transactional-purpose
+version: 1
+topic: jpa-transaction
+subtopic: transactions
+level: 1
+type: mc
+tags: [transactional]
+prompt:
+  tr: "Bir Spring servis metodunun üzerine `@Transactional` koymak temel olarak ne sağlar?"
+options:
+  - id: a
+    text: "Metot aynı anda yalnızca tek bir thread tarafından çalıştırılır; diğer eşzamanlı çağrılar sıraya girip bekler."
+    misconception: { tr: "`@Transactional`'ı `synchronized` ile karıştırıyor. Transaction, veritabanı işlemlerinin birlikte commit veya rollback edilmesini sağlar; metodu aynı anda birden çok thread çalıştırabilir. Eşzamanlı erişimdeki çakışmaları isolation seviyesi ve kilitler yönetir." }
+  - id: b
+    text: "Metot bir exception ile biterse Spring onu belirli sayıda, kısa aralıklarla otomatik olarak yeniden çalıştırır."
+    misconception: { tr: "Transaction'ı bir yeniden deneme (retry) mekanizması sanıyor. `@Transactional` hata olunca değişiklikleri geri alır ama metodu yeniden çalıştırmaz; yeniden deneme ayrı bir ihtiyaçtır (ör. Spring Retry)." }
+  - id: c
+    text: "Metottaki her repository çağrısı ayrı ayrı commit edilir; böylece sonradan çıkan bir hata önceki kayıtları bozmaz."
+    misconception: { tr: "Davranışı tersinden anlıyor. Her çağrının ayrı commit edilmesi, `@Transactional` olmayan bir servis metodunda olan şeydir; anotasyonun amacı bu çağrıları tek bir iş birimi (unit of work) olarak birleştirmektir." }
+  - id: d
+    text: "Metottaki veritabanı işlemleri tek transaction'da yürür: başarıyla biterse commit, RuntimeException'da rollback olur."
+    correct: true
+explanation:
+  tr: "Transaction, birbirine bağlı işlemlerin ya hep birlikte kalıcı olmasını ya da hiçbirinin kalıcı olmamasını sağlar (atomicity). Örneğin sipariş kaydı ile stok düşümü aynı transaction'da olursa, stok adımı hata verdiğinde sipariş kaydı da geri alınır. Spring bu davranışı metodu saran bir proxy ile ekler: metot başlarken transaction açılır, metot bitince sonuca göre commit ya da rollback yapılır."
+revealsAnswerOf: [jpa-transaction.transactions.checked-exception-rollback]   # doğru şık, varsayılan rollback kuralını (yalnız RuntimeException) ele veriyor
+resources: [spring-docs-transactions]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

@@ -1,0 +1,27 @@
+id: spring-core.bean-scope.post-construct-timing
+version: 1
+topic: spring-core
+subtopic: bean-scope-lifecycle
+level: 1
+type: mc
+tags: [lifecycle]
+prompt:
+  tr: "Bir Spring bean'inde `@PostConstruct` ile işaretlenmiş metot ne zaman çalışır?"
+options:
+  - id: a
+    text: "Her HTTP isteği geldiğinde, istek controller'a ulaşmadan hemen önce."
+    misconception: { tr: "Lifecycle callback'ini filter veya interceptor gibi istek başına çalışan bir mekanizma sanıyor. `@PostConstruct` isteklerle değil, bean'in oluşturulmasıyla ilgilidir." }
+  - id: b
+    text: "Bean oluşturulup bağımlılıkları enjekte edildikten sonra, kullanıma verilmeden önce."
+    correct: true
+  - id: c
+    text: "Uygulama tamamen ayağa kalkıp istek kabul etmeye başladıktan sonra."
+    misconception: { tr: "`@PostConstruct`'ı uygulama hazır olduktan sonra çalışan kodla (`CommandLineRunner`, `ApplicationReadyEvent`) karıştırıyor. Singleton bean'lerde bu metot context başlatılırken, uygulama istek kabul etmeden önce çalışır." }
+  - id: d
+    text: "Spring bu metodu kendisi çağırmaz; constructor'ın sonunda elle çağırman gerekir."
+    misconception: { tr: "Anotasyonun yalnızca bir etiket olduğunu sanıyor. Container bu metodu bağımlılıkları enjekte ettikten sonra kendisi çağırır; elle çağırmaya gerek yoktur." }
+explanation:
+  tr: "`@PostConstruct`, bağımlılıklar hazır olduktan sonra yapılması gereken başlangıç işleri içindir (örneğin bir cache'i doldurmak). Singleton bean'lerde bu, uygulama açılırken bir kez demektir. Spring 6 / Boot 3'te anotasyon `jakarta.annotation` paketindedir, `javax.annotation` değil."
+resources: [spring-docs-beans]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

@@ -1,0 +1,27 @@
+id: jpa-transaction.orm-basics.jpa-vs-hibernate
+version: 1
+topic: jpa-transaction
+subtopic: orm-basics
+level: 1
+type: mc
+tags: [jpa, hibernate, orm]
+prompt:
+  tr: "JPA (Jakarta Persistence) ile Hibernate arasındaki ilişki nedir?"
+options:
+  - id: a
+    text: "İkisi aynı kütüphanenin farklı adlarıdır; Hibernate eski adıdır, JPA ise Jakarta'ya geçişten sonraki yeni adıdır."
+    misconception: { tr: "JPA ile Hibernate'i aynı şey sanıyor. JPA bir standarttır; Hibernate onu uygulayan ürünlerden biridir (EclipseLink de bir başkasıdır). Jakarta'ya geçişte değişen, standardın adı ve paketidir (`javax.persistence` → `jakarta.persistence`)." }
+  - id: b
+    text: "JPA, nesneleri tablolara eşlemek için standart bir API tanımlar; Hibernate bu standardı uygulayan bir ORM framework'üdür."
+    correct: true
+  - id: c
+    text: "Hibernate, Spring'in JPA modülüdür; Spring kullanmayan bir projede Hibernate ile çalışmak mümkün değildir."
+    misconception: { tr: "Hibernate'i Spring'in bir parçası sanıyor. Hibernate, Spring'den bağımsız bir projedir ve tek başına kullanılabilir. Spring Boot'ta `spring-boot-starter-data-jpa` JPA sağlayıcısı olarak Hibernate'i getirir; Spring Data JPA ise JPA'nın üstüne repository katmanı ekler." }
+  - id: d
+    text: "JPA, veritabanına SQL gönderen düşük seviyeli sürücü API'sidir; Hibernate onun üstünde çalışan bir sorgu aracıdır."
+    misconception: { tr: "JPA'yı JDBC ile karıştırıyor. SQL'i veritabanına gönderen düşük seviyeli API JDBC'dir. JPA nesne-ilişkisel eşleme (ORM) için bir standarttır; Hibernate gibi sağlayıcılar altta JDBC kullanır." }
+explanation:
+  tr: "ORM, Java nesneleri ile ilişkisel tablolar arasındaki eşlemeyi senin yerine yapar. JPA bu işin standardıdır: `@Entity`, `@Id`, `EntityManager` gibi arayüz ve anotasyonları tanımlar ama kendi başına çalışmaz. Hibernate bu standardı uygulayan sağlayıcıdır (provider) ve kendine özgü ek özellikler de sunar. Kodu mümkün olduğunca JPA API'sine yazmak, sağlayıcıya bağımlılığı azaltır. Spring Boot 3'te paket adı `jakarta.persistence`'tır."
+resources: [jakarta-persistence-spec, hibernate-user-guide]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

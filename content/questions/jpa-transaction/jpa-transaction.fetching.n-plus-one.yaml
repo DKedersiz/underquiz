@@ -1,0 +1,93 @@
+id: jpa-transaction.fetching.n-plus-one
+version: 3
+topic: jpa-transaction
+subtopic: fetching
+level: 3
+type: open
+tags: [n-plus-one, lazy-loading, performance]
+answerHint: medium
+prompt:
+  tr: |
+    Son 7 günün siparişlerini müşteri adıyla listeleyen endpoint test verisinde hızlıydı; canlıda
+    (birkaç bin sipariş) saniyeler sürüyor. SQL logunu açınca şunu görüyorsun:
+
+    ```sql
+    select o1_0.id,o1_0.created_at,o1_0.customer_id,o1_0.total from orders o1_0 where o1_0.created_at>?
+    select c1_0.id,c1_0.email,c1_0.name from customer c1_0 where c1_0.id=?
+    select c1_0.id,c1_0.email,c1_0.name from customer c1_0 where c1_0.id=?
+    select c1_0.id,c1_0.email,c1_0.name from customer c1_0 where c1_0.id=?
+    -- ... yüzlerce benzer satır
+    ```
+
+    ```java
+    @Entity
+    @Table(name = "orders")
+    public class Order {
+        @Id @GeneratedValue
+        private Long id;
+        private Instant createdAt;
+        private BigDecimal total;
+
+        @ManyToOne(fetch = FetchType.LAZY, optional = false)
+        private Customer customer;
+        // getter'lar
+    }
+
+    public interface OrderRepository extends JpaRepository<Order, Long> {
+        List<Order> findByCreatedAtAfter(Instant since);
+    }
+
+    // OrderService içinde
+    @Transactional(readOnly = true)
+    public List<OrderSummary> recentOrders() {
+        return orderRepository.findByCreatedAtAfter(Instant.now().minus(7, ChronoUnit.DAYS))
+            .stream()
+            .map(o -> new OrderSummary(o.getId(), o.getCustomer().getName(), o.getTotal()))
+            .toList();
+    }
+    ```
+
+    Logda gördüğün sorun ne ve neden oluşuyor? Bu sorunu çözmek için hangi yöntemler var ve bu
+    endpoint için hangisini neden seçersin? (Kod yazman gerekmiyor.)
+rubric:
+  - { id: r1, weight: 2, required: true, point: { tr: "Teşhis: N+1 problemi. Siparişler tek sorguyla gelir (1), ardından erişilen farklı müşteriler için ayrı ayrı sorgular çalışır (N). Sorgu sayısı veriyle büyüdüğü için az veriyle testte fark edilmez, canlıda yavaşlatır." } }
+  - { id: r2, weight: 2, required: true, point: { tr: "Sebep: `customer` LAZY olduğu için ilk sorgu müşteri verisini getirmez; `customer` alanı henüz yüklenmemiş bir proxy'dir. Döngüdeki `o.getCustomer().getName()` çağrısı proxy'yi başlatır ve o anda o müşteri için bir SELECT atılır." } }
+  - { id: r3, weight: 2, point: { tr: "Müşterileri ana sorguyla birlikte getiren somut bir çözüm verir: `join fetch` içeren bir `@Query`, `@EntityGraph(attributePaths = \"customer\")` veya yalnızca gereken alanları seçen bir DTO projection (`select new ...`). Kod yazması gerekmez; yöntemi adıyla ve ne yaptığıyla anlatması yeterlidir." } }
+  - { id: r4, weight: 1, point: { tr: "Batch fetching'i seçenek olarak bilir ve bedelini söyler: `@BatchSize` veya `hibernate.default_batch_fetch_size` sorguyu değiştirmeden müşterileri id listesiyle toplu yükler; sorgu sayısını azaltır ama tek sorguya indirmez." } }
+  - { id: r5, weight: 1, point: { tr: "`FetchType.EAGER` yapmanın çözüm olmadığını açıklar: JPQL/derived query'de `join fetch` yazılmazsa EAGER ilişki yine ayrı sorgularla yüklenir; üstelik ilişkiye ihtiyaç duyulmayan her yerde de yüklenir." } }
+  - { id: r6, weight: 1, point: { tr: "Bu endpoint için seçimini gerekçelendirir. Örnek: yalnız sipariş id'si, müşteri adı ve tutar gerektiği için DTO projection en hafif seçenektir; entity'ler aynı işlemde değiştirilecek veya başka yerde kullanılacaksa `join fetch`/`@EntityGraph` daha uygundur." } }
+misconceptions:
+  - { id: m1, text: { tr: "Ana çözüm olarak `customer` ilişkisini `FetchType.EAGER` yapmayı önerir." } }
+  - { id: m2, text: { tr: "Sorunu eksik index'e, yavaş veritabanına veya connection pool boyutuna bağlar." } }
+  - { id: m3, text: { tr: "`join fetch` yerine düz bir `join` (`select o from Order o join o.customer c ...`) yazmanın müşterileri de yükleyeceğini söyler." } }
+pass: { minScore: 4, requireAll: [r1, r2] }
+followUps:
+  - ifMissing: r3
+    prompt: { tr: "Müşteri adlarının siparişlerle aynı sorguda gelmesi için hangi yöntemi kullanırdın ve bu yöntem ne yapar?" }
+  - ifMissing: r5
+    prompt: { tr: "Bir takım arkadaşın `customer` ilişkisini `FetchType.EAGER` yapmayı öneriyor. Bu, logdaki sorunu çözer mi? Neden?" }
+modelAnswer:
+  tr: |
+    Bu N+1 problemi: siparişler tek sorguyla geliyor (1), sonra müşteriler için tek tek SELECT'ler
+    çalışıyor (N). Sorgu sayısı veriyle büyüdüğü için testte fark edilmiyor. Sebep: `customer` LAZY;
+    ilk sorgu yalnız `customer_id`'yi okur, `getName()` çağrılınca proxy başlatılır ve sorgu atılır.
+
+    Seçenekler: `join fetch` içeren `@Query` ya da derived query üzerinde
+    `@EntityGraph(attributePaths = "customer")`; DTO projection; batch fetching
+    (`hibernate.default_batch_fetch_size`) sorgu sayısını azaltır ama tek sorguya indirmez. EAGER
+    çözüm değil: derived/JPQL sorguda yine ayrı sorgularla yüklenir ve gereksiz yerlerde de yüklenir.
+
+    Seçimim DTO projection: endpoint yalnız id, müşteri adı ve tutarı gösteriyor, entity'lere gerek yok.
+
+    ```java
+    @Query("select new com.example.shop.OrderSummary(o.id, c.name, o.total) " +
+           "from Order o join o.customer c where o.createdAt > :since")
+    List<OrderSummary> findRecentSummaries(@Param("since") Instant since);
+    ```
+
+    Siparişler aynı işlemde değiştirilecek olsaydı `join fetch` seçerdim.
+explanation:
+  tr: "N+1, lazy bir ilişkiye döngü içinde erişildiğinde ortaya çıkar. Aynı müşteri persistence context'te bir kez yüklendiği için ek sorgu sayısı aslında farklı müşteri sayısı kadardır; yine de veriyle büyür. Kalıcı çözüm, her kullanım senaryosunun ihtiyaç duyduğu ilişkiyi sorguda açıkça istemektir (`join fetch`, entity graph veya DTO projection). Mapping'de ilişkileri LAZY bırakmak, gerekeni sorgu başına getirmek Hibernate'in de önerdiği yoldur. Hibernate 6'da koleksiyon `join fetch` edildiğinde tekrar eden ana entity'ler otomatik ayıklanır; `distinct` yazmak artık gerekmez."
+resources: [hibernate-user-guide, jakarta-persistence-spec]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-28 }

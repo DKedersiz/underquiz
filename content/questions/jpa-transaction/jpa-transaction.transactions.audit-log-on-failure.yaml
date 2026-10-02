@@ -1,0 +1,82 @@
+id: jpa-transaction.transactions.audit-log-on-failure
+version: 1
+topic: jpa-transaction
+subtopic: transactions
+level: 4
+type: open
+tags: [transactional, propagation, requires-new]
+answerHint: medium
+prompt:
+  tr: |
+    Destek ekibi, başarısız olanlar dahil her sipariş denemesinin `audit_log` tablosunda görünmesini
+    istiyor. Mevcut kod şöyle:
+
+    ```java
+    @Service
+    public class OrderService {
+        private final OrderRepository orderRepository;
+        private final StockService stockService;
+        private final AuditLogRepository auditLogRepository;
+
+        public OrderService(OrderRepository orderRepository, StockService stockService,
+                            AuditLogRepository auditLogRepository) {
+            this.orderRepository = orderRepository;
+            this.stockService = stockService;
+            this.auditLogRepository = auditLogRepository;
+        }
+
+        @Transactional
+        public Order placeOrder(OrderRequest request) {
+            auditLogRepository.save(AuditLog.attempt(request));
+            // stok yetmezse OutOfStockException (RuntimeException) fırlatır
+            stockService.decrease(request.productId(), request.quantity());
+            return orderRepository.save(Order.from(request));
+        }
+    }
+    ```
+
+    Stok yetmediğinde audit kaydı da tabloda yok. Sebebi ne? Nasıl düzeltirsin? Çözümünün bedeli ne,
+    başka hangi seçenekler var ve hangisini neden seçersin?
+rubric:
+  - { id: r1, weight: 2, required: true, point: { tr: "Sebep: audit satırı siparişle aynı transaction'da yazılıyor (`save()` varsayılan `REQUIRED` ile mevcut transaction'a katılır). `OutOfStockException` metottan çıkınca transaction rollback olur ve audit satırı da geri alınır." } }
+  - { id: r2, weight: 2, required: true, point: { tr: "Audit kaydını sipariş transaction'ından bağımsız commit eden bir çözüm önerir: audit yazımını `@Transactional(propagation = REQUIRES_NEW)` bir metoda almak (dış transaction askıya alınır, audit kendi transaction'ında commit olur, dış rollback onu etkilemez) veya audit'i sipariş transaction'ının dışında, transaction'sız bir üst katmandan kendi transaction'ında yazmak." } }
+  - { id: r3, weight: 1, point: { tr: "Yeni transaction'ın gerçekten açılması için çağrının proxy'den geçmesi gerektiğini gözetir: `REQUIRES_NEW` metodu (veya `placeOrder()`'ı saran üst katman) ayrı bir bean'dedir; aynı sınıftan `this` ile çağrılmaz." } }
+  - { id: r4, weight: 2, point: { tr: "Bedeli tartar, en az birini gerekçesiyle söyler: `REQUIRES_NEW` dış transaction'ın connection'ı açıkken ikinci bir connection alır, yoğun trafikte pool tükenebilir ve thread'ler birbirini bekleyerek kilitlenebilir; audit yazımı hata verirse exception siparişe yayılır ve yakalanmazsa siparişi de geri aldırır." } }
+  - { id: r5, weight: 1, point: { tr: "En az iki yolu karşılaştırıp gerekçeli bir seçim yapar. Örnek: `REQUIRES_NEW` çağrı yerinde basittir ama connection bedeli vardır; audit'i transaction dışında yazmak aynı anda iki connection tutmaz ve denemenin sonucunu (başarılı/başarısız, sebep) kaydetmeyi kolaylaştırır ama bir katman daha ister." } }
+misconceptions:
+  - { id: m1, text: { tr: "Sorunu `placeOrder()` içinde exception'ı yakalayarak veya `noRollbackFor` ekleyerek dış transaction'ı commit ettirmeye çalışır; başarısız siparişin yarım kalan değişikliklerinin de kalıcı olma riskini tartışmaz." } }
+  - { id: m2, text: { tr: "`REQUIRES_NEW` ile açılan transaction'ın, dış transaction rollback olunca onunla birlikte geri alınacağını söyler (`NESTED`/savepoint davranışıyla karıştırır)." } }
+  - { id: m3, text: { tr: "`REQUIRES_NEW`'i aynı sınıftaki bir metoda koyup `this` üzerinden çağırmanın yeterli olduğunu söyler." } }
+pass: { minScore: 6, requireAll: [r1, r2] }   # seviye 4: çözümün yanında en az kısmi bir bedel veya seçenek karşılaştırması gerekir
+followUps:
+  - ifMissing: r4
+    prompt: { tr: "Bu kod her siparişte çalışıyor. Bir kampanya gününde aynı anda yüzlerce sipariş gelirse `REQUIRES_NEW` veritabanı bağlantıları açısından nasıl bir risk yaratır?" }
+  - ifMissing: r2
+    prompt: { tr: "Audit kaydının, sipariş başarısız olsa bile tabloda kalması için transaction yapısını nasıl değiştirirdin?" }
+modelAnswer:
+  tr: |
+    Audit satırı `placeOrder()`'ın transaction'ında yazılıyor: `save()` varsayılan `REQUIRED` ile
+    mevcut transaction'a katılır. `OutOfStockException` metottan çıkınca transaction rollback olur,
+    audit satırı da geri alınır.
+
+    Çözüm 1: Audit yazımını ayrı bir `AuditService` bean'ine taşıyıp metodu
+    `@Transactional(propagation = Propagation.REQUIRES_NEW)` yapmak. Dış transaction askıya alınır,
+    audit kendi transaction'ında commit olur; sipariş geri alınsa da kayıt kalır. Metot ayrı bean'de
+    olmalı; aynı sınıftan çağrılırsa proxy atlanır.
+
+    Bedeli: dış transaction connection'ını tutarken iç transaction ikinci bir connection alır. Yoğun
+    trafikte pool tükenebilir, thread'ler ikinci connection'ı beklerken kilitlenebilir; pool boyutu
+    buna göre ayarlanmalı. Audit yazımı hata verirse exception siparişe yayılır; siparişi bozmaması
+    için yakalanmalı.
+
+    Çözüm 2: Audit'i sipariş transaction'ının dışında yazmak. Transaction'sız bir `OrderFacade`,
+    `placeOrder()`'ı try/catch ile çağırır, sonucu (başarılı ya da başarısızlık sebebi) `AuditService`
+    ile kendi transaction'ında kaydeder. Aynı anda iki connection tutulmaz; bedeli bir katman daha.
+
+    Seçimim Çözüm 2: destek ekibi için denemenin sonucu da değerli ve connection bedeli yok. Kod
+    yapısını değiştirmek zorsa ve pool yeterliyse `REQUIRES_NEW` da kabul edilebilir.
+explanation:
+  tr: "`REQUIRED` tüm işi tek bir fiziksel transaction'da toplar; hepsi birlikte commit veya rollback olur. Bir kaydın ana işten bağımsız kalıcı olması gerekiyorsa ya ayrı bir fiziksel transaction (`REQUIRES_NEW`) ya da ana transaction'ın dışında yazma gerekir. `REQUIRES_NEW` bedelsiz değildir: dış transaction'ın connection'ı açık kalırken ikinci bir connection ister. JPA ile `NESTED` (savepoint) seçeneği pratikte kullanılmaz; Spring'in `JpaTransactionManager`'ında varsayılan olarak kapalıdır."
+resources: [spring-docs-transactions]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

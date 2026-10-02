@@ -1,0 +1,27 @@
+id: spring-core.autoconfig.back-off
+version: 1
+topic: spring-core
+subtopic: boot-autoconfig
+level: 2
+type: mc
+tags: [datasource]
+prompt:
+  tr: "Spring Boot uygulamanda, Boot'un otomatik oluşturduğu `DataSource` yerine kendi yapılandırdığın bir `DataSource` kullanmak istiyorsun. Genellikle ne yapman yeterlidir?"
+options:
+  - id: a
+    text: "Bir `@Configuration` sınıfında kendi `DataSource` `@Bean`'ini tanımlamak; Boot bu türde bir bean görünce kendininkini oluşturmaz."
+    correct: true
+  - id: b
+    text: "Boot'un `DataSourceAutoConfiguration` sınıfını projene kopyalayıp değiştirmek; auto-configuration ancak böyle özelleştirilir."
+    misconception: { tr: "Auto-configuration'ı değiştirmek için Boot'un kodunu değiştirmek gerektiğini sanıyor. Auto-configuration geri çekilebilir tasarlanmıştır; aynı türde kendi bean'ini tanımlamak yeterlidir." }
+  - id: c
+    text: "Kendi bean'ini tanımlamak tek başına yetmez; iki `DataSource` çakışır, önce `DataSourceAutoConfiguration`'ı exclude etmelisin."
+    misconception: { tr: "Auto-configuration'ın koşulsuz çalıştığını sanıyor. Boot'un `DataSource` yapılandırması aynı türde bir bean bulunca geri çekilir; exclude, bir auto-configuration'ı tamamen kapatmak istediğinde kullanılır." }
+  - id: d
+    text: "Tüm auto-configuration'ı kapatıp uygulamanın bütün bean'lerini elle tanımlamalısın; kısmen değiştirmek mümkün değildir."
+    misconception: { tr: "Auto-configuration'ı ya hep ya hiç sanıyor. Tek tek parçaları kendi bean'lerinle değiştirebilir veya yalnızca istemediğin auto-configuration sınıfını exclude edebilirsin." }
+explanation:
+  tr: "Boot'un auto-configuration sınıfları kullanıcı tanımlarından sonra değerlendirilir ve bean'lerinin çoğu `@ConditionalOnMissingBean` gibi koşullarla korunur. Bu yüzden aynı türde kendi bean'ini tanımladığında Boot'unki geri çekilir (back off) ve Boot senin `DataSource`'unu gereken her yerde (örneğin JPA ve veritabanı başlatma) kullanır. Bir auto-configuration'ı tamamen kapatmak istersen `@SpringBootApplication(exclude = ...)` kullanılır."
+resources: [spring-boot-docs-autoconfig]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

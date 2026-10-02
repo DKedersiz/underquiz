@@ -1,0 +1,44 @@
+id: spring-core.autoconfig.datasource-conditions
+version: 1
+topic: spring-core
+subtopic: boot-autoconfig
+level: 3
+type: mc
+tags: [auto-configuration, conditional]
+prompt:
+  tr: |
+    Yeni bir Spring Boot 3 projesine, veritabanı kısmını sonra yazmak üzere
+    `spring-boot-starter-data-jpa` bağımlılığını ekledin. Henüz hiçbir `DataSource` bean'i
+    tanımlamadın, `application.yml`'da da veritabanı ayarı yok. Uygulama şu hatayla açılmıyor:
+
+    ```
+    Failed to configure a DataSource: 'url' attribute is not specified and no embedded datasource could be configured.
+    ```
+
+    Tek satır DataSource kodu yazmadığın hâlde Spring Boot neden bir DataSource kurmaya çalışıyor?
+options:
+  - id: a
+    text: "Starter JDBC sınıflarını classpath'e getirdi; `DataSourceAutoConfiguration`'ın `@ConditionalOnClass` koşulu sağlandı ve context'te `DataSource` olmadığı için Boot onu kendisi kurmaya çalıştı."
+    correct: true
+  - id: b
+    text: "`@SpringBootApplication`'ın component scan'i, starter jar'ının içindeki `@Configuration` sınıflarını bulup çalıştırdı; bunlardan biri DataSource oluşturmaya çalışıyor."
+    misconception: { tr: "Auto-configuration'ı component scan sanıyor. Component scan yalnızca uygulamanın kendi paketlerini tarar; auto-configuration sınıfları Boot'un `AutoConfiguration.imports` dosyasında listelenir ve `@EnableAutoConfiguration` ile yüklenir." }
+  - id: c
+    text: "JPA starter'ı eklendiğinde Maven/Gradle derleme sırasında projeye bir DataSource yapılandırma sınıfı üretir; bu sınıf `application.yml`'da bağlantı bilgisini bulamıyor."
+    misconception: { tr: "Auto-configuration'ı derleme zamanında kod üretimi sanıyor. Karar çalışma zamanında, classpath'e ve context'teki bean'lere bakan koşullarla verilir." }
+  - id: d
+    text: "Spring Boot'ta JPA'yı `@EnableJpaRepositories` ile elle açmak gerekir; bu anotasyon olmadığı için yapılandırma yarım kaldı ve Boot eksik yapılandırmayı DataSource hatası olarak bildiriyor."
+    misconception: { tr: "Boot'ta JPA'nın elle etkinleştirilmesi gerektiğini sanıyor. Repository desteği de auto-configuration ile gelir; hatanın sebebi eksik anotasyon değil, bağlantı bilgisinin olmaması." }
+explanation:
+  tr: |
+    `@SpringBootApplication` içindeki `@EnableAutoConfiguration`, Boot'un
+    `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` dosyalarında
+    listelenen auto-configuration sınıflarını yükler. Her sınıf koşullarla korunur: `@ConditionalOnClass`
+    classpath'e, `@ConditionalOnMissingBean` senin tanımladığın bean'lere bakar. Çözüm: `spring.datasource.url`
+    gibi bağlantı ayarlarını vermek, geliştirme için H2 gibi gömülü bir veritabanı eklemek ya da veritabanı
+    gerçekten henüz gerekmiyorsa `@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)`.
+    Hangi auto-configuration'ın neden devreye girdiğini, uygulamayı `--debug` ile açınca basılan
+    conditions report gösterir.
+resources: [spring-boot-docs-autoconfig]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-26 }

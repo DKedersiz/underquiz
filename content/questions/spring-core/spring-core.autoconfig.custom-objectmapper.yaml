@@ -1,0 +1,70 @@
+id: spring-core.autoconfig.custom-objectmapper
+version: 3
+topic: spring-core
+subtopic: boot-autoconfig
+level: 4
+type: open
+tags: [auto-configuration, conditional, jackson]
+answerHint: medium
+prompt:
+  tr: |
+    Bir Spring Boot 3 projesinde API'nin JSON alanlarını snake_case döndürmesi istendi. Bir takım arkadaşın şu sınıfı ekledi:
+
+    ```java
+    @Configuration
+    public class JacksonConfig {
+        @Bean
+        public ObjectMapper objectMapper() {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+            return mapper;
+        }
+    }
+    ```
+
+    Alanlar artık snake_case, ama iki yeni sorun çıktı: `application.yml`'daki
+    `spring.jackson.default-property-inclusion: non_null` ayarı etkisini yitirdi (null alanlar yine
+    JSON'da görünüyor) ve `LocalDateTime` alanı olan endpoint'ler 500 hatası veriyor.
+
+    Bu iki sorunun ortak sebebi ne? Nasıl düzeltirsin? Aklına gelen çözümlerden hangisini neden
+    seçersin?
+rubric:
+  - { id: r1, weight: 2, required: true, point: { tr: "Ortak sebep: Boot, kendi ObjectMapper'ını yalnızca context'te başka bir ObjectMapper tanımlı değilse oluşturur (auto-configuration geri çekilebilir). Kullanıcı tanımlı bir ObjectMapper olduğu için Boot'unki devre dışı kalır ve Spring MVC artık elle oluşturulan mapper'ı kullanır." } }
+  - { id: r2, weight: 2, required: true, point: { tr: "`new ObjectMapper()` Boot'un ayarlarını almaz: `spring.jackson.*` property'leri uygulanmaz ve classpath'teki `JavaTimeModule` gibi modüller kaydedilmez. `LocalDateTime` hatası bu yüzden oluşur." } }
+  - { id: r3, weight: 2, required: true, point: { tr: "Doğru düzeltme fikri: ObjectMapper'ı tamamen değiştirmek yerine Boot'un mapper'ını property veya bir customizer mekanizmasıyla özelleştirmek. Belirli sınıf veya property adları zorunlu değildir; fikrin doğru olması yeterlidir." } }
+  - { id: r4, weight: 1, point: { tr: "Seçenekleri tartar: property en basit yoldur ama sunulan ayarlarla sınırlıdır; customizer kodla esneklik verir ve varsayılanları korur; kendi ObjectMapper bean'i tam kontrol verir ama Boot'un modül kaydı, feature ayarları ve `spring.jackson.*` desteğini elle taşıma sorumluluğunu getirir." } }
+misconceptions:
+  - { id: m1, text: { tr: "İki `ObjectMapper` oluştuğunu ve Spring'in rastgele birini seçtiğini söyler; çözüm olarak yalnızca `@Primary` eklemeyi önerir." } }
+  - { id: m2, text: { tr: "Kendi bean'ini tanımlayınca Boot'un tüm auto-configuration'ı kapattığını söyler. Geri çekilme yalnızca ilgili koşula bağlı tanımlar için geçerlidir." } }
+  - { id: m3, text: { tr: "Sorunu `application.yml`'ın yüklenme sırasına veya `@Order`/`@DependsOn` eksikliğine bağlar." } }
+pass: { minScore: 6, requireAll: [r1, r2, r3] }   # r4 bonus; öz değerlendirmede 'kısmen' olmadığı için 6.5 dört maddeyi zorunlu yapıyordu
+followUps:
+  - ifMissing: r4
+    prompt: { tr: "Property, customizer bean'i ve kendi `ObjectMapper` bean'ini tanımlamak arasında nasıl seçim yaparsın? Kendi bean'ini yazmak ne zaman mantıklı olur?" }
+  - ifMissing: r1
+    prompt: { tr: "Sen bir `ObjectMapper` tanımladığında Spring Boot kendi `ObjectMapper`'ını neden oluşturmuyor? Bunu hangi mekanizma sağlıyor?" }
+modelAnswer:
+  tr: |
+    İki sorunun ortak sebebi auto-configuration'ın geri çekilmesi. Boot, `JacksonAutoConfiguration`
+    içinde kendi `ObjectMapper`'ını `@ConditionalOnMissingBean` ile tanımlar; context'te bizim
+    bean'imiz olduğu için Boot'unkini oluşturmaz ve Spring MVC artık `new ObjectMapper()` ile
+    ürettiğimiz nesneyi kullanır. Bu nesne Boot'un `Jackson2ObjectMapperBuilder`'ından geçmediği için
+    `spring.jackson.*` ayarları uygulanmaz ve classpath'teki `JavaTimeModule` kaydedilmez;
+    `LocalDateTime` bu yüzden serileştirilemez.
+
+    Düzeltme: `JacksonConfig`'i silip `spring.jackson.property-naming-strategy: SNAKE_CASE` eklemek.
+    Property'nin karşılamadığı bir ayar gerekirse `Jackson2ObjectMapperBuilderCustomizer` bean'i
+    yazarım; Boot'un varsayılanları korunur, benim ayarım üstüne eklenir.
+
+    Seçim: property en az kodla işi görür ama sunulan ayarlarla sınırlıdır. Customizer esneklik verir
+    ve varsayılanları korur. Kendi `ObjectMapper` bean'i tam kontrol verir ama Boot'un modül kaydını,
+    feature ayarlarını ve property desteğini elle taşımayı gerektirir; bunu yalnızca gerçekten farklı
+    bir mapper gerektiğinde, tercihen Boot'un builder'ından üreterek yaparım. Teşhis için `--debug`
+    ile açılan conditions report, `jacksonObjectMapper`'ın mevcut bir `ObjectMapper` yüzünden devreye
+    girmediğini gösterir.
+explanation:
+  tr: "Auto-configuration geri çekilebilir: aynı tipte kendi bean'ini tanımladığında Boot'un `@ConditionalOnMissingBean` ile korunan tanımı devreden çıkar ve onunla gelen tüm varsayılanlar da kaybolur. Bir auto-configured bean'i değiştirmeden önce Boot'un sunduğu property ve customizer noktalarına bakmak gerekir."
+revealsAnswerOf: [spring-core.autoconfig.back-off]   # back-off'un doğru şıkkı r1'i veriyor
+resources: [spring-boot-docs-autoconfig, spring-boot-howto-jackson]
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-10-01 }

@@ -1,0 +1,73 @@
+id: jpa-transaction.transactions.inner-exception-caught
+version: 2
+topic: jpa-transaction
+subtopic: transactions
+level: 4
+type: mc
+tags: [transactional, propagation, rollback]
+prompt:
+  tr: |
+    Süresi dolmuş bir kuponla sipariş verilirse siparişin indirimsiz alınması isteniyor. Takım
+    arkadaşın şu kodu yazdı. `CouponService` ayrı bir bean; `redeem()` metodu `@Transactional`
+    (propagation belirtilmemiş) ve kupon geçersizse `CouponExpiredException` (bir `RuntimeException`)
+    fırlatıyor.
+
+    ```java
+    @Service
+    public class OrderService {
+        private final OrderRepository orderRepository;
+        private final CouponService couponService;
+
+        public OrderService(OrderRepository orderRepository, CouponService couponService) {
+            this.orderRepository = orderRepository;
+            this.couponService = couponService;
+        }
+
+        @Transactional
+        public Order placeOrder(Order order, String couponCode) {
+            try {
+                couponService.redeem(couponCode, order);
+            } catch (CouponExpiredException e) {
+                // kupon geçersiz: siparişi indirimsiz al
+            }
+            return orderRepository.save(order);
+        }
+    }
+    ```
+
+    Canlıda süresi dolmuş kuponla verilen siparişler kaydedilmiyor ve logda şu hata görünüyor:
+
+    ```
+    org.springframework.transaction.UnexpectedRollbackException: Transaction silently rolled back because it has been marked as rollback-only
+    ```
+
+    Exception `placeOrder()` içinde yakalandığı hâlde sipariş neden kaydedilmiyor?
+options:
+  - id: a
+    text: "`redeem()` aynı transaction'a katılır; exception onun transactional sınırından çıkarken Spring ortak transaction'ı rollback-only işaretler. Dışta yakalamak bu işareti kaldırmaz."
+    correct: true
+  - id: b
+    text: "`redeem()` kendi alt transaction'ını açar. Bu alt transaction geri alınınca Spring, veriler tutarlı kalsın diye ona bağlı olan dış transaction'ı da otomatik olarak iptal eder."
+    misconception: { tr: "Varsayılan `REQUIRED`'ı dış transaction'a bağlı bir alt transaction sanıyor. `REQUIRED` yeni bir transaction açmaz, mevcut transaction'a katılır; iki metot aynı fiziksel transaction'ı paylaşır. Bağımsız bir transaction `REQUIRES_NEW` ile açılır." }
+  - id: c
+    text: "Kupon ve sipariş aynı satırlara yazdığı için veritabanı bir kilit çakışması (deadlock) algılayıp transaction'ı geri aldı; Spring bu durumu `UnexpectedRollbackException` olarak raporlar."
+    misconception: { tr: "Rollback'i veritabanına bağlıyor. Mesajdaki 'marked as rollback-only' ifadesi, rollback kararını Spring'in kendisinin verdiğini gösterir. Veritabanı kaynaklı bir kilit hatası kendi exception'ıyla görünürdü; burada tek bir istek var ve çakışan başka bir transaction yok." }
+  - id: d
+    text: "Transactional bir metodun içinde fırlayan her `RuntimeException`, nerede yakalanırsa yakalansın transaction'ı rollback-only yapar; bu yüzden `placeOrder()` içindeki try/catch işe yaramaz."
+    misconception: { tr: "Sonuç doğru ama sebep yanlış: rollback kararının exception fırladığı anda verildiğini sanıyor. Spring rollback kararını yalnız exception bir `@Transactional` metodun (proxy'nin) sınırından dışarı çıkarken verir. `redeem()` `@Transactional` olmasaydı, exception hiçbir transaction sınırından geçmeden `placeOrder()`'da yakalanır ve sipariş commit edilirdi." }
+explanation:
+  tr: |
+    Varsayılan propagation `REQUIRED`'dır: `redeem()` yeni transaction açmaz, `placeOrder()`'ın
+    transaction'ına katılır. Her `@Transactional` metot yine de kendi sınırında rollback kuralını
+    uygular. `RuntimeException` `redeem()`'in proxy'sinden dışarı çıkarken Spring ortak transaction'ı
+    rollback-only işaretler. `placeOrder()` exception'ı yakalayıp devam etse de commit denemesi
+    rollback'e döner. Spring, çağıran taraf commit yapıldığını sanmasın diye bilerek
+    `UnexpectedRollbackException` fırlatır.
+
+    Düzeltme yolları: beklenen bir iş sonucunu exception ile transaction sınırından geçirmemek (örneğin
+    kuponun geçerliliğini önce boolean dönen bir metotla kontrol etmek); gerçekten gerekiyorsa
+    rollback kuralını iç metotta değiştirmek (`redeem()` üzerinde `noRollbackFor`, dış metotta değil);
+    kupon işlemi siparişten bağımsız commit edilmeliyse `REQUIRES_NEW`.
+resources: [spring-docs-transactions]   # önerilen ek: spring-docs-tx-propagation
+source: { kind: original }
+review: { status: reviewed, by: Doğukan, date: 2026-09-28 }
