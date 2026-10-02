@@ -16,8 +16,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(site.url),
   title: { default: `${site.name} · ${site.tagline}`, template: `%s · ${site.name}` },
   description: tr.home.lead,
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: "/",
+    siteName: site.name,
+    title: `${site.name} · ${site.tagline}`,
+    description: tr.home.lead,
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: site.name }],
+  },
+  twitter: { card: "summary_large_image", images: ["/og.png"] },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -26,9 +37,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col font-sans">
         <header className="border-b border-line">
           <div className="mx-auto flex h-14 max-w-3xl items-center px-4">
-            <Link href="/" className="text-[15px] font-semibold tracking-tight">
-              {site.name}
-              <span className="ml-2 hidden font-normal text-muted sm:inline">{site.tagline}</span>
+            <Link href="/" className="flex items-center gap-3" aria-label={site.name}>
+              <picture>
+                <source srcSet="/brand/logo-dark.svg" media="(prefers-color-scheme: dark)" />
+                <img src="/brand/logo.svg" alt={site.name} width={140} height={26} className="h-[26px] w-auto" />
+              </picture>
+              <span className="hidden text-sm text-muted sm:inline">{site.tagline}</span>
             </Link>
           </div>
         </header>

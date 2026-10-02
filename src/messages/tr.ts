@@ -94,6 +94,11 @@ export const tr = {
     again: "Bu konuyu yeniden çöz",
     otherTopics: "Diğer konular",
   },
+  notFound: {
+    title: "Bu sayfa burada değil",
+    body: "Aradığın adres taşınmış ya da hiç var olmamış olabilir.",
+    home: "Ana sayfaya dön",
+  },
   footer: {
     note: "Sorular gerçek mülakat senaryolarından yola çıkılarak yazıldı ve tek tek incelendi.",
     by: "Yapan",

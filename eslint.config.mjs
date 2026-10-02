@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone logo generator scripts (Node CommonJS), not app code.
+    "design/**",
   ]),
 ]);
 
