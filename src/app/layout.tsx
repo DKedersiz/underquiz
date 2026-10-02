@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Fraunces, Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import Link from "next/link";
 import { site } from "@/lib/site";
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </p>
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
