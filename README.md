@@ -35,7 +35,7 @@ npm test # to do all the necessary tests on this application, also checks if any
 npm run build # to have a production-ready build
 ```
 
-npm install will show you 5 high-severity warnings. Do not run the npm audit fix --force command because it will force eslint-config-next to lower his version to an old one. All of the warnings are caused by a packet called braces.
+`npm install` will show you 5 high-severity warnings. Do not run the `npm audit fix --force` command because it will force eslint-config-next to lower its version to an old one. All warnings originate from the linting tool used exclusively during development. `npm audit --omit=dev` reports zero vulnerabilities in production dependencies.
 
 Stack: Next.js (App Router, static pages), TypeScript, Tailwind CSS, Zod, Vitest. No accounts, no database;
 progress is kept in the browser's localStorage.
