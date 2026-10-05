@@ -22,11 +22,18 @@ together. Question text is Turkish; markdown and code blocks are rendered at bui
 
 ## Development
 
+### Running Locally
+
+Tools needed:
+
+- Node.js -> version greater than 22+
+
 ```bash
-npm install
-npm run dev     # http://localhost:3000
-npm test        # scoring rules + validation of every content file
-npm run build
+npm install -> to install all the dependencies from the package.json
+npm run dev -> to start an development server     # http://localhost:3000
+npm test -> to do all the necessary tests on this application, also checks if any of the content file is good to go
+        # scoring rules + validation of every content file
+npm run build -> to have an production-ready build
 ```
 
 Stack: Next.js (App Router, static pages), TypeScript, Tailwind CSS, Zod, Vitest. No accounts, no database;
