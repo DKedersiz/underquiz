@@ -70,6 +70,7 @@ export const tr = {
   },
   results: {
     title: (topic: string) => `${topic} sonucun`,
+    shareTitle: (topic: string) => `${topic} sonucu`,
     yourLevel: "Seviyen",
     belowOne: "Seviye 1’in sorularında yeterli doğru yok. Aşağıdaki listeden başlamak en hızlı yol.",
     selfAssessed: "Açık uçlu sorular senin öz değerlendirmene göre puanlandı.",
