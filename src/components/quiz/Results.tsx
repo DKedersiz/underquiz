@@ -6,6 +6,7 @@ import { growthList, scoreTopic, type GrowthItem } from "@/lib/quiz/scoring";
 import type { Answers, QuestionView, Resource, TopicView } from "@/lib/quiz/types";
 import { tr } from "@/messages/tr";
 import { Badge, Button, Card } from "./ui";
+import { formatScore } from "@/lib/format";
 
 export function Results({ topic, answers, onRestart }: { topic: TopicView; answers: Answers; onRestart: () => void }) {
   const t = tr.results;
@@ -59,7 +60,7 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
                 </span>
                 <Bar value={l.earned} max={l.max} tone={l.passed ? "good" : "warn"} />
                 <span className="w-24 shrink-0 text-right text-sm text-muted">
-                  {fmt(l.earned)}/{l.max} · {l.passed ? t.passedLevel : t.failedLevel}
+                  {formatScore(l.earned)}/{l.max} · {l.passed ? t.passedLevel : t.failedLevel}
                 </span>
               </div>
             ))}
@@ -75,7 +76,7 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
               <span className="w-36 shrink-0 text-sm sm:w-56">{subtopicTitle(s.id)}</span>
               <Bar value={s.earned} max={s.max} tone="accent" />
               <span className="w-24 shrink-0 text-right text-sm text-muted">
-                {fmt(s.earned)}/{s.max}
+                {formatScore(s.earned)}/{s.max}
               </span>
             </div>
           ))}
@@ -228,5 +229,3 @@ function Bar({ value, max, tone }: { value: number; max: number; tone: "good" | 
     </div>
   );
 }
-
-const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1).replace(".", ","));
