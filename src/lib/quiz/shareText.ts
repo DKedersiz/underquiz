@@ -17,6 +17,9 @@ export function shareText(input: ShareTextInput): string {
     .filter((l) => l.max > 0)
     .map((l) => `Seviye ${l.level} · ${tr.levelNames[l.level]} · ${formatScore(l.earned)}/${l.max} ${l.passed ? tr.results.passedLevel : tr.results.failedLevel}`)
     .join("\n");
+  const subtopicLines = input.result.subtopics
+    .map((s) => `${input.subtopicTitle(s.id)} · ${formatScore(s.earned)}/${s.max}`)
+    .join("\n");
 
   return `${tr.results.shareTitle(input.title)}
 
@@ -25,11 +28,7 @@ ${levelLine}${openLine}
 ${levelLines}
 
 Alt konular
-ORM, JPA ve Hibernate temelleri; entity ve id · 3/3
-İlişkiler, owning side, cascade ve orphanRemoval · 3/3
-Lazy/eager, N+1, LazyInitializationException · 1,1/2
-Entity durumları, persistence context, dirty checking · 3/3
-@Transactional kullanımı, rollback, propagation, isolation · 4,1/7
+${subtopicLines}
 
 underquiz.dogukankedersiz.dev`;
 }
