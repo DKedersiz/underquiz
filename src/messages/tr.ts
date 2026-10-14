@@ -95,6 +95,8 @@ export const tr = {
     again: "Bu konuyu yeniden çöz",
     otherTopics: "Diğer konular",
     copyResult: "Sonucu kopyala",
+    copied: "✓ Kopyalandı",
+    copyFailed: "✕ Kopyalanamadı",
   },
   notFound: {
     title: "Bu sayfa burada değil",

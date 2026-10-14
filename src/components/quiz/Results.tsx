@@ -8,6 +8,7 @@ import { tr } from "@/messages/tr";
 import { Badge, Button, Card } from "./ui";
 import { formatScore } from "@/lib/format";
 import { shareText } from "@/lib/quiz/shareText";
+import { useState } from "react";
 
 export function Results({ topic, answers, onRestart }: { topic: TopicView; answers: Answers; onRestart: () => void }) {
   const t = tr.results;
@@ -17,6 +18,22 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
   const correct = topic.questions.filter((q) => !gapIds.has(q.id));
   const hasOpen = topic.questions.some((q) => q.type === "open" && answers[q.id]?.type === "open");
   const subtopicTitle = (id: string) => topic.subtopics.find((s) => s.id === id)?.title ?? id;
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(shareText({ title: topic.title, result, subtopicTitle, hasOpen }));
+      setCopyState("copied");
+    } catch {
+      setCopyState("failed");
+    }
+  }
+
+  const copyLabel = {
+    idle: t.copyResult,
+    copied: t.copied,
+    failed: t.copyFailed
+  }[copyState];
 
   return (
     <div className="space-y-12">
@@ -46,8 +63,8 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
           </p>
           {hasOpen && <p className="mt-3 text-sm text-muted">{t.selfAssessed}</p>}
         </Card>
-        <Button onClick={() => navigator.clipboard.writeText(shareText({ title: topic.title, result, subtopicTitle, hasOpen }))} variant="ghost">
-          {t.copyResult}
+        <Button onClick={copy} variant="ghost">
+          {copyLabel}
         </Button>
       </section>
 
