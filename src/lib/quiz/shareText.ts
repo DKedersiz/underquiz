@@ -1,5 +1,6 @@
 import { tr } from "@/messages/tr";
 import type { TopicResult } from "./scoring";
+import { formatScore } from "@/lib/format";
 
 export type ShareTextInput = {
   title: string;
@@ -10,16 +11,18 @@ export type ShareTextInput = {
 
 export function shareText(input: ShareTextInput): string {
   const levelLine = input.result.level > 0 ? `Seviye ${input.result.level} · ${tr.levelNames[input.result.level]}`
-   : `Seviye · ${tr.levelNames[input.result.level]}`
-   const openLine = input.hasOpen ? `\nAçık uçlu sorular öz değerlendirmeyle puanlandı.` : ``;
+   : `Seviye · ${tr.levelNames[input.result.level]}`;
+  const openLine = input.hasOpen ? `\nAçık uçlu sorular öz değerlendirmeyle puanlandı.` : ``;
+  const levelLines = input.result.levels
+    .filter((l) => l.max > 0)
+    .map((l) => `Seviye ${l.level} · ${tr.levelNames[l.level]} · ${formatScore(l.earned)}/${l.max} ${l.passed ? tr.results.passedLevel : tr.results.failedLevel}`)
+    .join("\n");
+
   return `${tr.results.shareTitle(input.title)}
 
 ${levelLine}${openLine}
 
-Seviye 1 · Tanıyor · 4/4 geçti
-Seviye 2 · Kullanıyor · 4/4 geçti
-Seviye 3 · İçini biliyor · 4,1/5 geçti
-Seviye 4 · Trade-off biliyor · 2,1/5 geçmedi
+${levelLines}
 
 Alt konular
 ORM, JPA ve Hibernate temelleri; entity ve id · 3/3
