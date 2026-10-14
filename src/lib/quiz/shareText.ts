@@ -11,10 +11,10 @@ export type ShareTextInput = {
 export function shareText(input: ShareTextInput): string {
   const levelLine = input.result.level > 0 ? `Seviye ${input.result.level} · ${tr.levelNames[input.result.level]}`
    : `Seviye · ${tr.levelNames[input.result.level]}`
+   const openLine = input.hasOpen ? `\nAçık uçlu sorular öz değerlendirmeyle puanlandı.` : ``;
   return `${tr.results.shareTitle(input.title)}
 
-${levelLine}
-Açık uçlu sorular öz değerlendirmeyle puanlandı.
+${levelLine}${openLine}
 
 Seviye 1 · Tanıyor · 4/4 geçti
 Seviye 2 · Kullanıyor · 4/4 geçti

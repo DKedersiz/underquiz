@@ -58,4 +58,10 @@ underquiz.dogukankedersiz.dev`);
         expect(text).toContain("Seviye · Başlangıç");
         expect(text).not.toContain("Seviye 0");
     })
+
+    it("hides the self-assessment line when there are no open questions", () => {
+        const text = shareText({...input, hasOpen: false});
+        expect(text).not.toContain("Açık uçlu sorular öz değerlendirmeyle puanlandı.");
+        expect(text).toContain("Seviye 3 · İçini biliyor\n\nSeviye 1");
+    })
 });
