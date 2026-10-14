@@ -94,6 +94,7 @@ export const tr = {
     correctTitle: (n: number) => `Doğru cevapladıkların (${n})`,
     again: "Bu konuyu yeniden çöz",
     otherTopics: "Diğer konular",
+    copyResult: "Sonucu kopyala",
   },
   notFound: {
     title: "Bu sayfa burada değil",

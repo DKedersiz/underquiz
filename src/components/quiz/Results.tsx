@@ -7,6 +7,7 @@ import type { Answers, QuestionView, Resource, TopicView } from "@/lib/quiz/type
 import { tr } from "@/messages/tr";
 import { Badge, Button, Card } from "./ui";
 import { formatScore } from "@/lib/format";
+import { shareText } from "@/lib/quiz/shareText";
 
 export function Results({ topic, answers, onRestart }: { topic: TopicView; answers: Answers; onRestart: () => void }) {
   const t = tr.results;
@@ -45,6 +46,9 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
           </p>
           {hasOpen && <p className="mt-3 text-sm text-muted">{t.selfAssessed}</p>}
         </Card>
+        <Button onClick={() => navigator.clipboard.writeText(shareText({ title: topic.title, result, subtopicTitle, hasOpen }))} variant="ghost">
+          {t.copyResult}
+        </Button>
       </section>
 
       <section>
