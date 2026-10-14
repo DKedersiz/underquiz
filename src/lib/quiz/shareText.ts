@@ -1,6 +1,7 @@
 import { tr } from "@/messages/tr";
 import type { TopicResult } from "./scoring";
 import { formatScore } from "@/lib/format";
+import { site } from "@/lib/site";
 
 export type ShareTextInput = {
   title: string;
@@ -20,6 +21,7 @@ export function shareText(input: ShareTextInput): string {
   const subtopicLines = input.result.subtopics
     .map((s) => `${input.subtopicTitle(s.id)} · ${formatScore(s.earned)}/${s.max}`)
     .join("\n");
+  const siteHost = new URL(site.url).host;
 
   return `${tr.results.shareTitle(input.title)}
 
@@ -30,5 +32,5 @@ ${levelLines}
 Alt konular
 ${subtopicLines}
 
-underquiz.dogukankedersiz.dev`;
+${siteHost}`;
 }
