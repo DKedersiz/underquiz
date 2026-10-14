@@ -8,7 +8,7 @@ import { tr } from "@/messages/tr";
 import { Badge, Button, Card } from "./ui";
 import { formatScore } from "@/lib/format";
 import { shareText } from "@/lib/quiz/shareText";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function Results({ topic, answers, onRestart }: { topic: TopicView; answers: Answers; onRestart: () => void }) {
   const t = tr.results;
@@ -19,6 +19,12 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
   const hasOpen = topic.questions.some((q) => q.type === "open" && answers[q.id]?.type === "open");
   const subtopicTitle = (id: string) => topic.subtopics.find((s) => s.id === id)?.title ?? id;
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+
+  useEffect(() => {
+    if (copyState === "idle") return;
+    const id = setTimeout(() => setCopyState("idle"), 2000);
+    return () => clearTimeout(id);
+  }, [copyState]);
 
   async function copy() {
     try {
