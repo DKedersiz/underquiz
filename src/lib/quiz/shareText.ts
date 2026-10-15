@@ -11,12 +11,12 @@ export type ShareTextInput = {
 };
 
 export function shareText(input: ShareTextInput): string {
-  const levelLine = input.result.level > 0 ? `Seviye ${input.result.level} · ${tr.levelNames[input.result.level]}`
-   : `Seviye · ${tr.levelNames[input.result.level]}`;
-  const openLine = input.hasOpen ? `\nAçık uçlu sorular öz değerlendirmeyle puanlandı.` : ``;
+  const levelLine = input.result.level > 0 ? `${tr.quiz.level(input.result.level)} · ${tr.levelNames[input.result.level]}`
+   : `${tr.quiz.levelLabel} · ${tr.levelNames[input.result.level]}`;
+  const openLine = input.hasOpen ? `\n${tr.results.shareSelfAssessed}` : ``;
   const levelLines = input.result.levels
     .filter((l) => l.max > 0)
-    .map((l) => `Seviye ${l.level} · ${tr.levelNames[l.level]} · ${formatScore(l.earned)}/${l.max} ${l.passed ? tr.results.passedLevel : tr.results.failedLevel}`)
+    .map((l) => `${tr.quiz.level(l.level)} · ${tr.levelNames[l.level]} · ${formatScore(l.earned)}/${l.max} ${l.passed ? tr.results.passedLevel : tr.results.failedLevel}`)
     .join("\n");
   const subtopicLines = input.result.subtopics
     .map((s) => `${input.subtopicTitle(s.id)} · ${formatScore(s.earned)}/${s.max}`)
@@ -29,7 +29,7 @@ ${levelLine}${openLine}
 
 ${levelLines}
 
-Alt konular
+${tr.results.subtopicsTitle}
 ${subtopicLines}
 
 ${siteHost}`;

@@ -38,6 +38,7 @@ export const tr = {
   quiz: {
     progress: (i: number, n: number) => `Soru ${i} / ${n}`,
     level: (l: number) => `Seviye ${l}`,
+    levelLabel: "Seviye",
     interview: "Gerçek mülakatta soruldu",
     unsure: "Emin değilim",
     next: "Devam",
@@ -97,6 +98,7 @@ export const tr = {
     copyResult: "Sonucu kopyala",
     copied: "✓ Kopyalandı",
     copyFailed: "✕ Kopyalanamadı",
+    shareSelfAssessed: "Açık uçlu sorular öz değerlendirmeyle puanlandı.",
   },
   notFound: {
     title: "Bu sayfa burada değil",
