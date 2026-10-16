@@ -38,6 +38,7 @@ export const tr = {
   quiz: {
     progress: (i: number, n: number) => `Soru ${i} / ${n}`,
     level: (l: number) => `Seviye ${l}`,
+    levelLabel: "Seviye",
     interview: "Gerçek mülakatta soruldu",
     unsure: "Emin değilim",
     next: "Devam",
@@ -70,6 +71,7 @@ export const tr = {
   },
   results: {
     title: (topic: string) => `${topic} sonucun`,
+    shareTitle: (topic: string) => `${topic} sonucu`,
     yourLevel: "Seviyen",
     belowOne: "Seviye 1’in sorularında yeterli doğru yok. Aşağıdaki listeden başlamak en hızlı yol.",
     selfAssessed: "Açık uçlu sorular senin öz değerlendirmene göre puanlandı.",
@@ -93,6 +95,10 @@ export const tr = {
     correctTitle: (n: number) => `Doğru cevapladıkların (${n})`,
     again: "Bu konuyu yeniden çöz",
     otherTopics: "Diğer konular",
+    copyResult: "Sonucu kopyala",
+    copied: "✓ Kopyalandı",
+    copyFailed: "✕ Kopyalanamadı",
+    shareSelfAssessed: "Açık uçlu sorular öz değerlendirmeyle puanlandı.",
   },
   notFound: {
     title: "Bu sayfa burada değil",

@@ -6,6 +6,9 @@ import { growthList, scoreTopic, type GrowthItem } from "@/lib/quiz/scoring";
 import type { Answers, QuestionView, Resource, TopicView } from "@/lib/quiz/types";
 import { tr } from "@/messages/tr";
 import { Badge, Button, Card } from "./ui";
+import { formatScore } from "@/lib/format";
+import { shareText } from "@/lib/quiz/shareText";
+import { useEffect, useState } from "react";
 
 export function Results({ topic, answers, onRestart }: { topic: TopicView; answers: Answers; onRestart: () => void }) {
   const t = tr.results;
@@ -15,6 +18,28 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
   const correct = topic.questions.filter((q) => !gapIds.has(q.id));
   const hasOpen = topic.questions.some((q) => q.type === "open" && answers[q.id]?.type === "open");
   const subtopicTitle = (id: string) => topic.subtopics.find((s) => s.id === id)?.title ?? id;
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+
+  useEffect(() => {
+    if (copyState === "idle") return;
+    const id = setTimeout(() => setCopyState("idle"), 2000);
+    return () => clearTimeout(id);
+  }, [copyState]);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(shareText({ title: topic.title, result, subtopicTitle, hasOpen }));
+      setCopyState("copied");
+    } catch {
+      setCopyState("failed");
+    }
+  }
+
+  const copyLabel = {
+    idle: t.copyResult,
+    copied: t.copied,
+    failed: t.copyFailed
+  }[copyState];
 
   return (
     <div className="space-y-12">
@@ -44,6 +69,9 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
           </p>
           {hasOpen && <p className="mt-3 text-sm text-muted">{t.selfAssessed}</p>}
         </Card>
+        <Button onClick={copy} variant="ghost" aria-live="polite">
+          {copyLabel}
+        </Button>
       </section>
 
       <section>
@@ -59,7 +87,7 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
                 </span>
                 <Bar value={l.earned} max={l.max} tone={l.passed ? "good" : "warn"} />
                 <span className="w-24 shrink-0 text-right text-sm text-muted">
-                  {fmt(l.earned)}/{l.max} · {l.passed ? t.passedLevel : t.failedLevel}
+                  {formatScore(l.earned)}/{l.max} · {l.passed ? t.passedLevel : t.failedLevel}
                 </span>
               </div>
             ))}
@@ -75,7 +103,7 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
               <span className="w-36 shrink-0 text-sm sm:w-56">{subtopicTitle(s.id)}</span>
               <Bar value={s.earned} max={s.max} tone="accent" />
               <span className="w-24 shrink-0 text-right text-sm text-muted">
-                {fmt(s.earned)}/{s.max}
+                {formatScore(s.earned)}/{s.max}
               </span>
             </div>
           ))}
@@ -228,5 +256,3 @@ function Bar({ value, max, tone }: { value: number; max: number; tone: "good" | 
     </div>
   );
 }
-
-const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1).replace(".", ","));
