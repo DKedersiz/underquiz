@@ -69,7 +69,7 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
           </p>
           {hasOpen && <p className="mt-3 text-sm text-muted">{t.selfAssessed}</p>}
         </Card>
-        <Button onClick={copy} variant="ghost">
+        <Button onClick={copy} variant="ghost" aria-live="polite">
           {copyLabel}
         </Button>
       </section>

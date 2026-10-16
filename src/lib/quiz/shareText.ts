@@ -11,8 +11,8 @@ export type ShareTextInput = {
 };
 
 export function shareText(input: ShareTextInput): string {
-  const levelLine = input.result.level > 0 ? `${tr.quiz.level(input.result.level)} · ${tr.levelNames[input.result.level]}`
-   : `${tr.quiz.levelLabel} · ${tr.levelNames[input.result.level]}`;
+  const levelLabel = input.result.level > 0 ? tr.quiz.level(input.result.level) : tr.quiz.levelLabel;
+  const levelLine = `${levelLabel} · ${tr.levelNames[input.result.level]}`;
   const openLine = input.hasOpen ? `\n${tr.results.shareSelfAssessed}` : ``;
   const levelLines = input.result.levels
     .filter((l) => l.max > 0)
