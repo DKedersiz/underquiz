@@ -34,7 +34,7 @@ export type TopicView = {
   id: string;
   // Changes whenever the asked questions change, so a stale saved session is discarded.
   contentKey: string;
-  titlexd: string;
+  title: string;
   subtopics: { id: string; title: string }[];
   levels: Record<Level, string>;
   questions: QuestionView[];
