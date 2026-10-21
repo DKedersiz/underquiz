@@ -35,7 +35,7 @@ describe("shareText", () => {
   it("formats the issue example", () => {
     expect(shareText(input)).toBe(`JPA & Transaction sonucu
 
-Seviye 3 · İçini biliyor
+Seviye 3 · İçini biliyorxaxaxa
 Açık uçlu sorular öz değerlendirmeyle puanlandı.
 
 Seviye 1 · Tanıyor · 4/4 geçti
