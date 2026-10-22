@@ -1,0 +1,48 @@
+id: java-oop.oop-basics.override-dispatch
+version: 1
+topic: java-oop
+subtopic: oop-basics
+level: 1
+type: mc
+tags: [polymorphism, override]
+prompt:
+  tr: |
+    Aşağıdaki sınıflar tanımlı ve `main` metodunda son iki satır çalıştırılıyor.
+
+    ```java
+    class Animal {
+        void speak() {
+            System.out.println("Animal");
+        }
+    }
+
+    class Dog extends Animal {
+        @Override
+        void speak() {
+            System.out.println("Hav");
+        }
+    }
+
+    Animal a = new Dog();
+    a.speak();
+    ```
+
+    Bu kodun çıktısı ne olur? `speak()` metodunun hangi sürümünün çağrılacağına ne zaman karar verilir?
+options:
+  - id: a
+    text: "`Hav` yazdırılır; hangi metodun çağrılacağı çalışma zamanında, nesnenin gerçek türüne göre belirlenir."
+    correct: true
+  - id: b
+    text: "`Hav` yazdırılır; hangi metodun çağrılacağı derleme zamanında, değişkenin türüne göre belirlenir."
+    misconception: { tr: "Kişi, metodun hangi sürümünün çağrılacağını referans değişkeninin türünün belirlediğini sanıyor. Gerçekte override edilmiş instance metotlarında seçim, çalışma zamanında nesnenin gerçek türüne göre yapılır." }
+  - id: c
+    text: "`Animal` yazdırılır; değişkenin türü `Animal` olduğu için `Animal.speak()` çağrılır."
+    misconception: { tr: "Kişi, Animal türündeki referansın yalnızca Animal metodunu çağırabileceğini sanıyor. Gerçekte referansın türü hangi metotların erişilebilir olduğunu belirlerken override edilen metodun hangi sürümünün çalışacağını nesnenin gerçek türü belirler." }
+  - id: d
+    text: "`Hav` yazdırılır, çünkü `@Override` anotasyonu `Dog`'un metodunu seçtirir; anotasyon olmasaydı `Animal` yazdırılırdı."
+    misconception: { tr: "Kişi, @Override anotasyonunun çalışma zamanında hangi metodun çağrılacağını belirlediğini sanıyor. Gerçekte @Override yalnızca derleyicinin metodun gerçekten üst sınıftaki bir metodu override ettiğini doğrulamasını sağlar; anotasyon olmasa da Dog.speak() çağrılır." }
+explanation:
+  tr: "Override işleminde aynı imzaya sahip metotlardan hangisinin çalışacağı, çalışma zamanında nesnenin gerçek türüne göre belirlenir; bu nedenle a.speak() çağrısı Dog.speak() metodunu çalıştırır. @Override anotasyonu bu davranışı sağlamaz, yalnızca override işleminin doğru yapıldığını denetlemeye yardımcı olur. Overload işleminde ise aynı isimli, farklı parametre listelerine sahip metotlardan hangisinin seçileceği derleme zamanında belirlenir."
+resources: [dev-java-oop]
+source: { kind: original }
+review: { status: draft }

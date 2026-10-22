@@ -1,0 +1,65 @@
+id: java-oop
+domain: backend-fundamentals
+title: { tr: "Java ve OOP" }
+subtopics:
+  - { id: oop-basics,          title: { tr: "OOP ilkeleri: sınıf, abstract class, interface, polimorfizm" } }
+  - { id: equality-hashing,    title: { tr: "Eşitlik: ==, equals/hashCode, wrapper'lar ve hash tabanlı koleksiyonlar" } }
+  - { id: immutability,        title: { tr: "Immutability: String, final, defensive copy ve record" } }
+  - { id: generics,            title: { tr: "Generics ve type erasure" } }
+  - { id: collections-streams, title: { tr: "Koleksiyonlar ve Stream API" } }
+  - { id: exceptions,          title: { tr: "Exception'lar ve kaynak yönetimi" } }
+  - { id: concurrency,         title: { tr: "Eşzamanlılık: race condition, synchronized, volatile, concurrent koleksiyonlar" } }
+levels:                      # bu konu için seviyelerin somut anlamı
+  1: { tr: "OOP ilkelerini, abstract class ile interface farkını, == ile equals farkını ve checked/unchecked exception ayrımını tanır; dilin varsayılan davranışlarını bilir." }
+  2: { tr: "equals/hashCode sözleşmesinin HashMap'e etkisini, immutable sınıfın nasıl yazıldığını, type erasure'ı ve Stream'in nasıl çalıştığını açıklar; koleksiyonu bilinçli seçer." }
+  3: { tr: "Değişen key yüzünden kaybolan kaydı, ConcurrentModificationException'ı, race condition'ı ve statik koleksiyondan doğan bellek sızıntısını teşhis eder ve düzeltir." }
+  4: { tr: "Eşzamanlılık ve tasarım seçenekleri arasında (kilit mi atomik işlem mi, kalıtım mı kompozisyon mu, hangi koleksiyon) gerçek bir senaryoda gerekçeli seçim yapar (güçlü junior)." }
+resources:
+  - id: dev-java-oop
+    title: "Dev.java: Objects, Classes, Interfaces, Packages, and Inheritance"
+    url: "https://dev.java/learn/language/oop/classes/"
+    kind: docs            # docs | article | video | book
+    lang: en
+    levels: [1, 2]
+  - id: dev-java-object
+    title: "Dev.java: Object as a Superclass"
+    url: "https://dev.java/learn/language/oop/inheritance/objects/"
+    kind: docs
+    lang: en
+    levels: [1, 2]
+  - id: dev-java-records
+    title: "Dev.java: Using Records to Model Immutable Data"
+    url: "https://dev.java/learn/language/oop/records/"
+    kind: docs
+    lang: en
+    levels: [2]
+  - id: dev-java-type-erasure
+    title: "Dev.java: Type Erasure"
+    url: "https://dev.java/learn/language/fp/generics/type-erasure/"
+    kind: docs
+    lang: en
+    levels: [2]
+  - id: dev-java-collections
+    title: "Dev.java: The Collections Framework"
+    url: "https://dev.java/learn/api/collections-and-streams/collections-framework/"
+    kind: docs
+    lang: en
+    levels: [1, 2, 3]
+  - id: dev-java-stream-intermediate
+    title: "Dev.java: Adding Intermediate Operations on a Stream"
+    url: "https://dev.java/learn/api/collections-and-streams/streams/intermediate-operation/"
+    kind: docs
+    lang: en
+    levels: [2]
+  - id: dev-java-exceptions
+    title: "Dev.java: Exceptions"
+    url: "https://dev.java/learn/language/annotations-exceptions/exceptions/"
+    kind: docs
+    lang: en
+    levels: [1, 2]
+  - id: java-tutorial-concurrency
+    title: "The Java Tutorials: Concurrency"
+    url: "https://docs.oracle.com/javase/tutorial/essential/concurrency/"
+    kind: docs
+    lang: en
+    levels: [3, 4]

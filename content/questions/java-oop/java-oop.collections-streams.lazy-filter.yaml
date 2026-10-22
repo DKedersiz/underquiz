@@ -1,0 +1,39 @@
+id: java-oop.collections-streams.lazy-filter
+version: 1
+topic: java-oop
+subtopic: collections-streams
+level: 2
+type: mc
+tags: [stream, lazy-evaluation]
+prompt:
+  tr: |
+    `main` metodunda şu kod çalıştırılıyor:
+
+    ```java
+    List<String> names = List.of("ali", "veli", "ayse");
+    names.stream()
+         .filter(n -> {
+             System.out.println("filter " + n);
+             return n.startsWith("a");
+         });
+    ```
+
+    Bu kod çalıştırıldığında konsolda ne görünür?
+options:
+  - id: a
+    text: "Hiçbir şey yazdırılmaz; `filter` bir ara işlemdir ve akışı başlatacak bir terminal işlem çağrılmamıştır."
+    correct: true
+  - id: b
+    text: "`filter ali`, `filter veli`, `filter ayse` yazdırılır; `filter` çağrıldığı anda listedeki elemanlar işlenir."
+    misconception: { tr: "Kişi, Stream üzerindeki ara işlemlerin çağrıldıkları anda elemanları işlediğini sanıyor. Gerçekte filter gibi ara işlemler, bir terminal operation akışı tetikleyene kadar çalıştırılmaz." }
+  - id: c
+    text: "Yalnızca `filter ali` ve `filter ayse` yazdırılır; `filter`, koşulu sağlayan elemanlar için çalışır."
+    misconception: { tr: "Kişi, filter koşulunun elemanları hemen kontrol edip eşleşenleri yazdırdığını sanıyor. Gerçekte lambda içindeki println bile çalışmaz; çünkü henüz akış üzerinde eleman işlenmemiştir. Bir terminal işlem eklense bile koşul her eleman için çağrılır, yani println üç eleman için de çalışırdı." }
+  - id: d
+    text: "Kod derlenmez; `filter` metodunun döndürdüğü Stream'in bir değişkene atanması gerekir."
+    misconception: { tr: "Kişi, Stream işleminin derlenebilmesi için sonucunun bir değişkene atanması gerektiğini sanıyor. Gerçekte kod geçerlidir; terminal operation bulunmaması derleme hatasına değil, ara işlemin çalıştırılmamasına neden olur." }
+explanation:
+  tr: "filter, Stream API'de bir ara işlemdir ve lazy evaluation nedeniyle tek başına elemanları işlemez. count(), toList() veya forEach() gibi bir terminal operation eklendiğinde akış çalıştırılır ve lambda içindeki println ifadeleri yürütülür. Örneğin sona .toList(); eklenirse üç eleman da filtre koşulundan geçirilirken yazdırılır."
+resources: [dev-java-stream-intermediate]
+source: { kind: original }
+review: { status: draft }
