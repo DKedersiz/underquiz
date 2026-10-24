@@ -45,4 +45,4 @@ explanation:
   tr: "Override işleminde aynı imzaya sahip metotlardan hangisinin çalışacağı, çalışma zamanında nesnenin gerçek türüne göre belirlenir; bu nedenle a.speak() çağrısı Dog.speak() metodunu çalıştırır. @Override anotasyonu bu davranışı sağlamaz, yalnızca override işleminin doğru yapıldığını denetlemeye yardımcı olur. Overload işleminde ise aynı isimli, farklı parametre listelerine sahip metotlardan hangisinin seçileceği derleme zamanında belirlenir."
 resources: [dev-java-oop]
 source: { kind: original }
-review: { status: draft }
+review: { status: reviewed, by: Claude, date: 2026-10-24 }

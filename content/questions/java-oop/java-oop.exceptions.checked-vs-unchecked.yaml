@@ -37,4 +37,4 @@ explanation:
   tr: "`IOException`, checked exception olduğu için `readConfig` içinde `try-catch` ile yakalanmalı veya metot imzasına `throws IOException` eklenmelidir. `IllegalArgumentException`, `RuntimeException` sınıfının alt türü olan unchecked bir exception'dır; bu yüzden `setAge` içinde fırlatılması ayrıca bildirim gerektirmez. Java'da checked ve unchecked ayrımı, exception'ın elle mi yoksa bir kütüphane tarafından mı fırlatıldığına değil, türüne bağlıdır."
 resources: [dev-java-exceptions]
 source: { kind: original }
-review: { status: draft }
+review: { status: reviewed, by: Claude, date: 2026-10-24 }

@@ -36,4 +36,4 @@ explanation:
   tr: "filter, Stream API'de bir ara işlemdir ve lazy evaluation nedeniyle tek başına elemanları işlemez. count(), toList() veya forEach() gibi bir terminal operation eklendiğinde akış çalıştırılır ve lambda içindeki println ifadeleri yürütülür. Örneğin sona .toList(); eklenirse üç eleman da filtre koşulundan geçirilirken yazdırılır."
 resources: [dev-java-stream-intermediate]
 source: { kind: original }
-review: { status: draft }
+review: { status: reviewed, by: Claude, date: 2026-10-24 }
