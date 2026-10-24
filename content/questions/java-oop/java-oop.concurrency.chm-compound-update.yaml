@@ -1,0 +1,53 @@
+id: java-oop.concurrency.chm-compound-update
+version: 1
+topic: java-oop
+subtopic: concurrency
+level: 3
+type: mc
+tags: [concurrenthashmap, race-condition, atomicity]
+prompt:
+  tr: |
+    Bir geliştirici, iki thread'in aynı sayacı artırdığı şu programın `2000000` yazdırmasını bekliyor:
+
+    ```java
+    public class Counter {
+        static ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+
+        public static void main(String[] args) throws Exception {
+            Runnable task = () -> {
+                for (int i = 0; i < 1_000_000; i++) {
+                    map.put("java", map.getOrDefault("java", 0) + 1);
+                }
+            };
+
+            Thread t1 = new Thread(task);
+            Thread t2 = new Thread(task);
+            t1.start();
+            t2.start();
+            t1.join();
+            t2.join();
+
+            System.out.println(map.get("java"));
+        }
+    }
+    ```
+
+    Program çalıştırıldığında ne olur, sebebi nedir ve doğru düzeltme hangisidir?
+options:
+  - id: a
+    text: "Sonuç her zaman `2000000` olur. `ConcurrentHashMap` thread-safe olduğu için bütün sayaç işlemleri atomiktir; düzeltme gerekmez."
+    misconception: { tr: "Kişi, thread-safe bir veri yapısı kullanmanın, onun üzerinde yapılan birden fazla işlemden oluşan her dizinin de atomik olduğu anlamına geldiğini sanıyor. Gerçekte `getOrDefault` ve `put` tek tek thread-safe'tir; ikisinin arasındaki boşluğu hiçbir şey korumaz." }
+  - id: b
+    text: "Sonuç `2000000`'dan düşük olabilir. `getOrDefault` ve `put` ayrı ayrı thread-safe olsa da aralarındaki okuma-artırma-yazma dizisi atomik değildir; `map.merge(\"java\", 1, Integer::sum)` kullanılmalıdır."
+    correct: true
+  - id: c
+    text: "Sonuç `2000000`'dan düşük olabilir. Sorun thread'ler arasında değerin görünürlüğüdür; `map` alanını `volatile` yapmak yeterlidir."
+    misconception: { tr: "Kişi, kaybolan artırmaların bir görünürlük sorunu olduğunu ve `volatile` ile çözüleceğini sanıyor. Gerçekte `volatile` yalnızca görünürlük sağlar; okuma-artırma-yazma dizisini atomik yapmaz. Üstelik burada `volatile` yalnızca `map` referansına uygulanır, map'in içindeki değerlere değil." }
+  - id: d
+    text: "Program, eşzamanlı erişim nedeniyle `ConcurrentModificationException` fırlatabilir. Çözüm, döngüleri `synchronized` bir blok içine almaktır."
+    misconception: { tr: "Kişi, iki thread'in aynı anahtarı güncellemesinin `ConcurrentModificationException`'a yol açacağını sanıyor. Gerçekte bu exception bir koleksiyon üzerinde iterasyon sürerken yapısının değiştirilmesiyle ilgilidir ve `ConcurrentHashMap` zaten eşzamanlı güncellemeye izin verir; sorun exception değil, sessizce kaybolan artırmalardır. Döngüyü `synchronized` içine almak sonucu düzeltir ama iki thread'i sıraya sokar; bu sayaç için tek çağrılık atomik `merge` daha doğrudan bir çözümdür." }
+explanation:
+  tr: "`ConcurrentHashMap`'in her metodu tek başına thread-safe'tir, ama `map.put(k, map.getOrDefault(k, 0) + 1)` iki ayrı çağrıdan oluşur. İki thread aynı anda aynı değeri (örneğin 5) okur, ikisi de 6 yazar ve bir artırma kaybolur (lost update; `counter++` ile aynı sorun). Bu yüzden sonuç çoğu çalıştırmada `2000000`'dan düşüktür ve her seferinde farklı çıkabilir; iki thread × 1 milyon artırmalı bir denemede hiçbir turda `2000000` çıkmadı. `merge(\"java\", 1, Integer::sum)` (ya da `compute`) okuma, hesaplama ve yazmayı map'in içinde tek bir atomik işlem olarak yapar ve her çalıştırmada `2000000` verir. Genel kural: thread-safe bir koleksiyon, üstüne kurulan bileşik işlemi thread-safe yapmaz."
+resources: [java-tutorial-concurrency]
+source: { kind: original }
+review: { status: reviewed, by: Claude, date: 2026-10-24 }

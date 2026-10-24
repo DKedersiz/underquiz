@@ -1,0 +1,63 @@
+id: java-oop.equality-hashing.mutable-key
+version: 1
+topic: java-oop
+subtopic: equality-hashing
+level: 3
+type: mc
+tags: [hashmap, hashcode, mutable-key]
+prompt:
+  tr: |
+    Oturumları kullanıcıya göre tutan bir cache'te, kullanıcı e-posta adresini değiştiriyor:
+
+    ```java
+    class UserKey {
+        String email;
+
+        UserKey(String email) {
+            this.email = email;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof UserKey other)) return false;
+            return Objects.equals(email, other.email);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(email);
+        }
+    }
+
+    Map<UserKey, String> sessions = new HashMap<>();
+
+    UserKey user = new UserKey("ali@example.com");
+    sessions.put(user, "session-123");
+
+    user.email = "ali.new@example.com";
+
+    System.out.println(sessions.get(user));
+    System.out.println(sessions.get(new UserKey("ali@example.com")));
+    System.out.println(sessions.size());
+    ```
+
+    Programın çıktısı (üç satır, sırasıyla) ne olur?
+options:
+  - id: a
+    text: "`session-123`, `null`, `1`"
+    misconception: { tr: "Kişi, aramada aynı nesne kullanıldığı için `this == obj` kontrolünün kaydı bulacağını sanıyor. Gerçekte `HashMap` önce key'in güncel `hashCode`'unu hesaplar ve girişte saklı hash ile karşılaştırır; hash değiştiği için eşleşme olmaz ve `equals` (içindeki `this == obj` dahil) hiç çağrılmaz." }
+  - id: b
+    text: "`null`, `null`, `0`"
+    misconception: { tr: "Kişi, key'in hash değeri değişince `HashMap`'in eski kaydı otomatik sildiğini sanıyor. Gerçekte `HashMap` key'deki değişiklikten haberdar olmaz; kayıt map'te kalır ve `size()` hâlâ `1` döner." }
+  - id: c
+    text: "`null`, `null`, `1`"
+    correct: true
+  - id: d
+    text: "`null`, `session-123`, `1`"
+    misconception: { tr: "Kişi, eski e-postayla oluşturulan key'in hash'i kayıttakiyle aynı olduğu için kaydın bulunacağını sanıyor. Gerçekte hash aynı olduğu için doğru bucket'a ve eşleşen saklı hash'e ulaşılır, ama ardından `equals` çağrılır ve kayıttaki key'in e-postası artık yeni adres olduğundan `false` döner. Hash'in aynı olması tek başına yeterli değildir." }
+explanation:
+  tr: "`HashMap`, kaydı `put` anındaki hash ile yerleştirir ve bu hash'i girişte saklar; aramada önce saklı hash'i, eşleşirse `equals`'ı kontrol eder. E-posta değişince: `get(user)` yeni hash'i hesaplar, saklı hash'le eşleşme olmaz ve `null` döner. Eski e-postayla yeni bir key doğru hash'e ulaşır ama `equals`, kayıttaki key'in yeni e-postasıyla karşılaştırdığı için tutmaz ve yine `null` döner. Kayıt silinmez; `size()` `1`'dir ve kayıt yalnızca `entrySet()` ile dolaşılarak görülebilir, `remove` de onu bulamaz (zombi kayıt; uzun yaşayan bir cache'te bellek sızıntısına döner). Düzeltme: map ve set key'leri değişmez olmalı (`final` alan ve setter yok ya da `record UserKey(String email)`), ya da key olarak kimliği değişmeyen bir değer (örneğin `userId`) kullanılmalı. E-posta değişecekse eski kayıt önce `remove` edilip yeni key ile tekrar eklenir."
+resources: [dev-java-object, dev-java-collections]
+source: { kind: original }
+review: { status: reviewed, by: Claude, date: 2026-10-24 }

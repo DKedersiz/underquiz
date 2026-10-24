@@ -1,0 +1,40 @@
+id: java-oop.exceptions.checked-vs-unchecked
+version: 1
+topic: java-oop
+subtopic: exceptions
+level: 1
+type: mc
+tags: [checked-exception, unchecked-exception]
+prompt:
+  tr: |
+    Gerekli import'lar yapılmış bir sınıfta şu iki metot var:
+
+    ```java
+    void readConfig(String path) {
+        String text = Files.readString(Path.of(path));
+    }
+
+    void setAge(int age) {
+        if (age < 0) throw new IllegalArgumentException("age < 0");
+    }
+    ```
+
+    `Files.readString` imzasında `throws IOException` taşıyor. Bu iki metottan hangisi derlenir, hangisi derlenmez?
+options:
+  - id: a
+    text: "İki metot da derlenmez; Java'da fırlatılabilecek her exception `catch` edilmeli veya `throws` ile bildirilmelidir."
+    misconception: { tr: "Kişi, Java'da fırlatılabilecek bütün exception türlerinin yakalanması veya bildirilmesi gerektiğini sanıyor. Gerçekte bu zorunluluk checked exception'lar için geçerlidir; `IllegalArgumentException` gibi unchecked exception'lar için geçerli değildir." }
+  - id: b
+    text: "`readConfig` derlenir, `setAge` derlenmez; kütüphaneden gelen exception bildirilmez, elle fırlatılan bildirilmelidir."
+    misconception: { tr: "Kişi, exception'ın nereden geldiğinin (`throw` ifadesinden mi, kütüphane metodundan mı) bildirim zorunluluğunu belirlediğini sanıyor. Gerçekte belirleyici olan exception türüdür; kütüphane metodundan gelen `IOException` da ele alınmalı veya bildirilmelidir." }
+  - id: c
+    text: "İki metot da derlenir; exception'lar yalnızca çalışma zamanında ortaya çıkar, derleyici ele alınmalarını zorunlu tutmaz."
+    misconception: { tr: "Kişi, derleyicinin hiçbir exception'ın ele alınmasını zorunlu tutmadığını sanıyor (C# ve TypeScript'te olduğu gibi). Gerçekte Java derleyicisi checked exception'ların yakalanmasını veya bildirilmesini zorunlu tutar; unchecked exception'lar için böyle bir zorunluluk yoktur." }
+  - id: d
+    text: "`readConfig` derlenmez, `setAge` derlenir; `IOException` checked olduğu için ele alınmalı, `IllegalArgumentException` unchecked'tır."
+    correct: true
+explanation:
+  tr: "`IOException`, checked exception olduğu için `readConfig` içinde `try-catch` ile yakalanmalı veya metot imzasına `throws IOException` eklenmelidir. `IllegalArgumentException`, `RuntimeException` sınıfının alt türü olan unchecked bir exception'dır; bu yüzden `setAge` içinde fırlatılması ayrıca bildirim gerektirmez. Java'da checked ve unchecked ayrımı, exception'ın elle mi yoksa bir kütüphane tarafından mı fırlatıldığına değil, türüne bağlıdır."
+resources: [dev-java-exceptions]
+source: { kind: original }
+review: { status: reviewed, by: Claude, date: 2026-10-24 }

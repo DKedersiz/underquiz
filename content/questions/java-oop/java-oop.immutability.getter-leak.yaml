@@ -1,0 +1,53 @@
+id: java-oop.immutability.getter-leak
+version: 1
+topic: java-oop
+subtopic: immutability
+level: 2
+type: mc
+tags: [immutability, defensive-copy, final]
+prompt:
+  tr: |
+    Aşağıdaki sınıf tanımlı ve `main` metodunda alttaki satırlar çalıştırılıyor.
+
+    ```java
+    public final class Quiz {
+        private final String title;
+        private final List<String> questions;
+
+        public Quiz(String title, List<String> questions) {
+            this.title = title;
+            this.questions = new ArrayList<>(questions);
+        }
+
+        public String getTitle()           { return title; }
+        public List<String> getQuestions() { return questions; }
+    }
+
+    List<String> input = new ArrayList<>(List.of("Q1", "Q2"));
+    Quiz quiz = new Quiz("Java", input);
+
+    input.add("Q3");
+    quiz.getQuestions().add("Q4");
+
+    System.out.println(quiz.getQuestions().size());
+    ```
+
+    Bu kodun çıktısı ne olur?
+options:
+  - id: a
+    text: "`3`"
+    correct: true
+  - id: b
+    text: "`4`"
+    misconception: { tr: "Kişi, `new ArrayList<>(questions)` ifadesinin yeni bir liste oluşturmak yerine yalnızca referansı kopyaladığını sanıyor ve iki eklemenin de iç listeye yansıyacağını düşünüyor. Gerçekte constructor elemanları yeni bir listeye kopyalar; `input`'a sonradan eklenen `\"Q3\"` iç listeyi etkilemez." }
+  - id: c
+    text: "`2`"
+    misconception: { tr: "Kişi, `private` alanın getter üzerinden de değiştirilemeyeceğini sanıyor ve dışarıdan yapılan eklemenin iç listeye yansımayacağını düşünüyor. Gerçekte `private` yalnızca alanın adına erişimi kısıtlar; getter iç listenin referansını döndürdüğü için `\"Q4\"` doğrudan iç listeye eklenir." }
+  - id: d
+    text: "`UnsupportedOperationException` fırlatılır."
+    misconception: { tr: "Kişi, `final` alanın yalnızca yeniden atamayı engellemekle kalmayıp listenin içeriğini de kilitlediğini sanıyor. Gerçekte `final` referansı sabitler, referansın gösterdiği `ArrayList` değiştirilebilir kalır." }
+explanation:
+  tr: "Constructor, gelen listeyi `new ArrayList<>(...)` ile kopyaladığı için `input` üzerinden eklenen `\"Q3\"` iç listeye girmez. Getter ise iç listenin kendisini döndürür; bu yüzden `getQuestions().add(\"Q4\")` doğrudan iç listeyi değiştirir ve sonuç 3 olur. Sınıfın `final` olması alt sınıfı, alanın `final` olması yeniden atamayı engeller; ikisi de listenin içeriğini korumaz. Düzeltmenin iki yolu var. Getter'da `List.copyOf(questions)` ya da kopyalamadan salt okunur görünüm veren `Collections.unmodifiableList(questions)` döndürmek; ya da constructor'da `this.questions = List.copyOf(questions)` yazarak iç listeyi baştan değiştirilemez yapmak (bu durumda `null` eleman kabul edilmez). İki düzeltmede de `getQuestions().add(\"Q4\")` sessizce yok sayılmaz, `UnsupportedOperationException` fırlatır."
+resources: [dev-java-records]
+source: { kind: original }
+review: { status: reviewed, by: Claude, date: 2026-10-24 }
