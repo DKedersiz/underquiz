@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:18
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: underquiz
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+
+volumes:
+  pgdata:
+
+    
