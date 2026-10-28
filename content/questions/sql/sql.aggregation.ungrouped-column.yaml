@@ -1,0 +1,34 @@
+id: sql.aggregation.ungrouped-column
+version: 1
+topic: sql
+subtopic: aggregation
+level: 1
+type: mc
+tags: [group-by, aggregate]
+prompt:
+  tr: |
+    Aşağıdaki sorgu PostgreSQL'de çalıştırıldığında ne olur?
+
+    ```sql
+    SELECT department_id, employee_name, COUNT(*)
+    FROM employees
+    GROUP BY department_id;
+    ```
+options:
+  - id: a
+    text: "Sorgu çalışır ve her departman için ilk çalışanın adını döndürür; `COUNT(*)` o departmandaki çalışan sayısını verir."
+    misconception: { tr: "Veritabanının her gruptan kendiliğinden ilk satırı seçtiğini düşünür. PostgreSQL bu şekilde belirsiz bir değeri otomatik seçmez." }
+  - id: b
+    text: "Sorgu çalışır ve her departman için alfabetik olarak ilk çalışanı döndürür; `COUNT(*)` departmandaki toplam çalışan sayısını verir."
+    misconception: { tr: "Gruplama sırasında sıralama yapılmadan alfabetik ilk değerin seçileceğini düşünür. `GROUP BY`, tek başına hangi satırın seçileceğini belirlemez." }
+  - id: c
+    text: "Sorgu hata verir; `employee_name` gruplanmadığı veya toplama fonksiyonuyla hesaplanmadığı için her departmana hangi adın atanacağı belirlenemez."
+    correct: true
+  - id: d
+    text: "Sorgu hata verir; `COUNT(*)` kullanıldığında `department_id` ve `employee_name` sütunlarının ikisi de toplama fonksiyonuyla hesaplanmalıdır."
+    misconception: { tr: "`COUNT(*)` kullanıldığında diğer tüm sütunların da toplama fonksiyonuna alınması gerektiğini düşünür. Oysa gruplanan sütunlar `SELECT` içinde bulunabilir." }
+explanation:
+  tr: "`GROUP BY department_id`, kayıtları departmana göre gruplar; fakat bir departmanda birden fazla çalışan adı olabilir. PostgreSQL, bu gruptan hangi `employee_name` değerinin seçileceğini belirleyemediği için sorguyu reddeder. Çözüm, çalışan adlarını da gruplamak veya yalnızca departman başına toplam sayıyı istiyorsan `employee_name` sütununu `SELECT` listesinden çıkarmaktır."
+resources: [pg-tutorial-agg]
+source: { kind: original }
+review: { status: draft }

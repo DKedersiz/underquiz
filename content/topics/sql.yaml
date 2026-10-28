@@ -1,0 +1,52 @@
+id: sql
+domain: backend-fundamentals
+title: { tr: "SQL ve veritabanı" }
+subtopics:
+  - { id: joins,              title: { tr: "JOIN türleri ve NULL'un sonuca etkisi" } }
+  - { id: keys-constraints,   title: { tr: "Anahtarlar ve kısıtlar: PK, FK, UNIQUE, CHECK, NOT NULL" } }
+  - { id: schema-design,      title: { tr: "Şema tasarımı: normalizasyon (1NF–3NF), ilişkiler, ayrı tablo mu jsonb mi" } }
+  - { id: aggregation,        title: { tr: "Gruplama: GROUP BY, HAVING ve WHERE ile HAVING farkı" } }
+  - { id: indexing,           title: { tr: "Index ve sorgu performansı: B-tree, composite index, EXPLAIN, pagination" } }
+  - { id: transactions,       title: { tr: "Transaction'lar: ACID, isolation seviyeleri, anomaliler, kilitleme" } }
+levels:
+  1: { tr: "JOIN türlerini, anahtar ve kısıtların ne işe yaradığını, 1–N ilişkide foreign key'in nereye konduğunu ve GROUP BY/HAVING kurallarını bilir; basit sorguları doğru yazar." }
+  2: { tr: "Index'in nasıl çalıştığını ve composite index'te sütun sırasının neden önemli olduğunu açıklar, EXPLAIN çıktısını okur; isolation seviyelerinin hangi anomaliyi önlediğini anlatır." }
+  3: { tr: "Yavaş sorguyu EXPLAIN ANALYZE ile teşhis eder, lost update ve deadlock'u tanıyıp düzeltir, büyük tabloda offset yerine keyset pagination kullanır." }
+  4: { tr: "Şema ve tutarlılık seçenekleri arasında (ayrı tablo mu jsonb mi, optimistic mi pessimistic kilit mi, hangi index) gerçek bir senaryoda gerekçeli seçim yapar (güçlü junior)." }
+resources:
+  - id: pg-tutorial-join
+    title: "PostgreSQL Tutorial: Joins Between Tables"
+    url: "https://www.postgresql.org/docs/current/tutorial-join.html"
+    kind: docs
+    lang: en
+    levels: [1]
+  - id: pg-tutorial-agg
+    title: "PostgreSQL Tutorial: Aggregate Functions"
+    url: "https://www.postgresql.org/docs/current/tutorial-agg.html"
+    kind: docs
+    lang: en
+    levels: [1]
+  - id: pg-constraints
+    title: "PostgreSQL: Constraints"
+    url: "https://www.postgresql.org/docs/current/ddl-constraints.html"
+    kind: docs
+    lang: en
+    levels: [1, 2]
+  - id: use-the-index-luke
+    title: "Use The Index, Luke!"
+    url: "https://use-the-index-luke.com/"
+    kind: book
+    lang: en
+    levels: [2, 3]
+  - id: pg-using-explain
+    title: "PostgreSQL: Using EXPLAIN"
+    url: "https://www.postgresql.org/docs/current/using-explain.html"
+    kind: docs
+    lang: en
+    levels: [2, 3]
+  - id: pg-transaction-isolation
+    title: "PostgreSQL: Transaction Isolation"
+    url: "https://www.postgresql.org/docs/current/transaction-iso.html"
+    kind: docs
+    lang: en
+    levels: [2, 3, 4]
