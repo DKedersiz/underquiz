@@ -1,0 +1,339 @@
+{
+  "type": "base",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "0dfdac7b-9f81-45b3-9933-5da42783309f",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "answers"
+      ],
+      "writes": [
+        "s|tbl|public.answers",
+        "n|tbl|public.answers",
+        "e|tbl|public.answers",
+        "n|rel|public.answers",
+        "n|type|public.answers",
+        "n|rel|public.answers_pkey",
+        "n|rel|public.answers_result_id_question_id_unique"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "results"
+      ],
+      "writes": [
+        "s|tbl|public.results",
+        "n|tbl|public.results",
+        "e|tbl|public.results",
+        "n|rel|public.results",
+        "n|type|public.results",
+        "n|rel|public.results_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "answers"
+      ],
+      "writes": [
+        "s|fk|public.answers.answers_result_id_results_id_fkey",
+        "n|fk|public.answers.answers_result_id_results_id_fkey",
+        "e|fk|public.answers.answers_result_id_results_id_fkey",
+        "n|con|public.answers.answers_result_id_results_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.answers",
+        "n|sch|public",
+        "n|tbl|public.results",
+        "n|sch|public",
+        "n|col|public.answers.result_id",
+        "n|col|public.results.id",
+        "e|uniqueness|public.results.id"
+      ]
+    }
+  ],
+  "ddl": [
+    {
+      "schema": "public",
+      "name": "answers",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "results",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "result_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "question_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "question_type",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "option_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "open_answer",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "credit",
+      "type": "double precision",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "results",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "results",
+      "name": "topic_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "results",
+      "name": "content_key",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "results",
+      "name": "level",
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "results",
+      "name": "level_scores",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "results",
+      "name": "subtopic_scores",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "results",
+      "name": "completed_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "answers_result_id_results_id_fkey",
+      "nameExplicit": false,
+      "columns": [
+        "result_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "results",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "answers_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "results",
+      "name": "results_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "answers_result_id_question_id_unique",
+      "nameExplicit": false,
+      "columns": [
+        "result_id",
+        "question_id"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "question_type_check",
+      "value": "\"question_type\" IN ('mc', 'open')",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "answers",
+      "name": "answer_shape_check",
+      "value": "(\"question_type\" = 'mc' AND \"option_id\" IS NOT NULL AND \"open_answer\" IS NULL) OR (\"question_type\" = 'open' AND \"option_id\" IS NULL AND \"open_answer\" IS NOT NULL)",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "results",
+      "name": "level_check",
+      "value": "\"level\" BETWEEN 0 AND 4",
+      "entityType": "checks"
+    }
+  ]
+}
