@@ -50,3 +50,9 @@ resources:
     kind: docs
     lang: en
     levels: [2, 3, 4]
+  - id: pg-datatype-datetime
+    title: "PostgreSQL: Date/Time Types"
+    url: "https://www.postgresql.org/docs/current/datatype-datetime.html"
+    kind: docs
+    lang: en
+    levels: [2]
