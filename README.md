@@ -37,8 +37,8 @@ npm run build # to have a production-ready build
 
 `npm install` will show you 5 high-severity warnings. Do not run the `npm audit fix --force` command because it will force eslint-config-next to lower its version to an old one. All warnings originate from the linting tool used exclusively during development. `npm audit --omit=dev` reports zero vulnerabilities in production dependencies.
 
-Stack: Next.js (App Router, static pages), TypeScript, Tailwind CSS, Zod, Vitest, PostgreSQL, Drizzle
-No accounts yet; progress is still kept in localStorage, the database is not connected to the app yet
+Stack: Next.js (App Router, static pages), TypeScript, Tailwind CSS, Zod, Vitest, PostgreSQL, Drizzle.
+No accounts yet; progress is still kept in localStorage, the database is not connected to the app yet.
 
 ### Local Database
 
