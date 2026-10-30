@@ -1,0 +1,27 @@
+id: sql.schema-design.jsonb-vs-table-analytics
+version: 1
+topic: sql
+subtopic: schema-design
+level: 4
+type: mc
+tags: [jsonb, normalization, gin, generated-column]
+prompt:
+  tr: "`results.subtopic_scores` şu an `jsonb` sütunu (`{\"joins\": 0.5, \"indexing\": 1}`) ve yalnızca sonuç sayfasında bütün olarak okunuyor. Yeni bir istek geldi: yönetici panelinde her gün \"son 30 günde ortalaması en düşük 3 alt konu\" gösterilecek, alt konuya göre filtreleme de yapılabilecek. Bu istek karşısında en gerekçeli karar hangisidir?"
+options:
+  - id: a
+    text: "Puanları ayrı bir `result_subtopic_scores` tablosuna taşımak; her alt konu ayrı satırda tutulur ve son 30 gün için `AVG`, `GROUP BY` ve alt konu filtreleri doğrudan SQL ile yapılır. Bedeli, sonuç sayfasında bütün puanları okumak için JOIN veya ek sorgu gerekmesidir."
+    correct: true
+  - id: b
+    text: "`jsonb` yapısını korumak; PostgreSQL `jsonb` içindeki alanlara erişebildiği için alt konu puanlarını filtreleyip ortalamalarını hesaplayabilir. Ayrı tabloya taşımak gereksiz veri tekrarı ve JOIN maliyeti oluşturur."
+    misconception: { tr: "PostgreSQL'in `jsonb` alanlarını sorgulayabilmesini, bu alanların ilişkisel sütunlar kadar kolay gruplanıp analiz edilebileceği şeklinde yorumlar. Oysa bu sorgular her seferinde `jsonb`'yi açıp dönüştürmeyi gerektirir; sık yapılan analitik sorgular karmaşıklaşır ve index seçenekleri sınırlanır. Yeni okuma ihtiyacının maliyetini gözden kaçırır." }
+  - id: c
+    text: "`jsonb` sütununu koruyup üzerine GIN index eklemek; böylece alt konu puanlarına daha hızlı erişilir ve yönetici panelindeki sorgular hızlanır. Mevcut yapıyı değiştirmeye gerek kalmaz."
+    misconception: { tr: "GIN index'in `jsonb` içindeki her türlü sorguyu hızlandırdığını sanır. Oysa GIN özellikle `@>` gibi içerme sorgularında faydalıdır; `AVG` hesaplamasını ve alt konu bazında gruplamayı hızlandırmaz." }
+  - id: d
+    text: "`jsonb` sütununu koruyup her alt konu için ayrı bir generated column oluşturmak; bu sütunlara B-tree index eklenerek filtreleme ve ortalama hızlanır, sonuç sayfasındaki okuma biçimi de değişmez."
+    misconception: { tr: "Sık kullanılan `jsonb` alanlarını generated column ile normal sütun gibi sunmanın analitik ihtiyaçları çözeceğini düşünür. Oysa her alt konu bir sütun olduğunda alt konular satır olarak temsil edilmez; `GROUP BY subtopic` ile birbirleriyle karşılaştırılamaz, sütunları tek tek `UNION` ile birleştirmek gerekir. Üstelik farklı konuların farklı alt konuları olduğundan birçok sütun NULL kalır." }
+explanation:
+  tr: "Mevcut tasarımda `jsonb` mantıklıdır, çünkü uygulama puanları yalnızca sonuç sayfasında bütün olarak okuyor. Yeni istek ise verinin okunma biçimini değiştiriyor: artık alt konu bazında filtreleme, gruplama ve ortalama gerekiyor. Ayrı tabloda her alt konunun bir satır olması `GROUP BY`, `AVG` ve uygun index'lerle bu analizi doğrudan mümkün kılar; bedeli sonuç sayfasında puanları okumak için JOIN veya ek sorgu gerekmesidir."
+resources: [pg-datatype-json]
+source: { kind: original }
+review: { status: draft }
