@@ -1,0 +1,27 @@
+id: sql.indexing.composite-leading-column
+version: 1
+topic: sql
+subtopic: indexing
+level: 3
+type: mc
+tags: [composite-index, b-tree, explain]
+prompt:
+  tr: "`results` üzerinde `(topic_id, completed_at)` composite index var ve `topic_id`'nin çok sayıda farklı değeri bulunuyor. `SELECT * FROM results WHERE completed_at >= '2026-10-01'` sorgusu (`topic_id` filtresi yok) tablonun küçük bir kısmını döndürüyor ama yavaş çalışıyor. `EXPLAIN` çıktısında composite index kullanılmıyor. Nedeni ve doğru çözüm için hangisi doğrudur?"
+options:
+  - id: a
+    text: "Index `(topic_id, completed_at)` sırasıyla oluşturulduğu için önce `topic_id`'ye göre sıralıdır. Sorguda `topic_id` filtresi olmadığından `completed_at` üzerinden verimli bir aralık taraması yapılamaz. Çözüm, `completed_at` için ayrı bir B-tree index oluşturmaktır."
+    correct: true
+  - id: b
+    text: "Composite index iki sütunu birlikte içerdiği için PostgreSQL her iki sütundaki koşullarda da index'i kullanabilir. Sorun index'in güncel olmamasıdır; `REINDEX` çalıştırmak yeterlidir."
+    misconception: { tr: "Composite index'in içerdiği her sütunda bağımsız olarak arama yapabildiğini sanır. Oysa sütun sırası önemlidir; `topic_id` olmadan `completed_at` üzerinden verimli arama yapılamaz. `REINDEX` bu sıralamayı değiştirmez." }
+  - id: c
+    text: "Sorun tarihin `'2026-10-01'` gibi metin olarak yazılmasıdır. PostgreSQL metni `timestamptz` ile karşılaştırırken index'i kullanamaz; değeri `'2026-10-01'::timestamptz` diye cast etmek gerekir."
+    misconception: { tr: "Tarih değerinin metin olarak yazılmasının index kullanımını engellediğini sanır. Oysa tırnaklı literal önce tipsiz kabul edilir ve PostgreSQL onu karşılaştırıldığı sütunun tipine kendisi çevirir; açık cast index kullanımı için gerekli değildir." }
+  - id: d
+    text: "PostgreSQL composite index'leri yalnızca bütün sütunlar için eşitlik koşulu verildiğinde kullanabilir. Bu nedenle `completed_at` için ayrı bir index oluşturmak da işe yaramaz; sorguya iki sütun için de koşul eklenmelidir."
+    misconception: { tr: "Composite index kullanımının bütün sütunlarda eşitlik koşulu gerektirdiğini sanır. Oysa B-tree index'ler eşitlik ve aralık koşullarını birlikte destekler; burada eksik olan soldaki sütunun koşuludur." }
+explanation:
+  tr: "`(topic_id, completed_at)` index'i kayıtları önce `topic_id`'ye, aynı `topic_id` içinde de `completed_at`'e göre sıralı tutar. Sorguda yalnızca `completed_at` koşulu olduğunda PostgreSQL aradığı tarihleri index'te tek bir başlangıç ve bitiş noktası arasında bulamaz, çünkü aynı tarihler farklı `topic_id` gruplarına dağılmıştır. Ayrı bir `completed_at` index'inde ise bu tarihler tek bir ardışık aralık olarak durur."
+resources: [use-the-index-luke, pg-using-explain]
+source: { kind: original }
+review: { status: draft }

@@ -1,0 +1,27 @@
+id: sql.transactions.lost-update-counter
+version: 1
+topic: sql
+subtopic: transactions
+level: 3
+type: mc
+tags: [lost-update, read-committed, isolation]
+prompt:
+  tr: "Her konu için ölçüm sayısını tutan bir `topics.attempt_count` sayacı var. Ölçüm bittiğinde uygulama şunları yapıyor: `SELECT attempt_count FROM topics WHERE id = 'sql'` ile değeri okuyor (ör. 40), uygulamada 1 ekliyor, ardından `UPDATE topics SET attempt_count = 41 WHERE id = 'sql'` çalıştırıyor. Veritabanı varsayılan Read Committed seviyesinde. Aynı anda iki kullanıcı ölçümü bitirdiğinde sayaç bazen yalnızca 1 artıyor. Sorunun nedeni ve en basit düzeltme için hangisi doğrudur?"
+options:
+  - id: a
+    text: "İki kullanıcı da 40 değerini okuyup kendi hesapladığı 41 değerini yazabilir; böylece işlemlerden biri diğerinin güncellemesini ezer. En basit düzeltme `UPDATE topics SET attempt_count = attempt_count + 1 WHERE id = 'sql'` kullanmaktır."
+    correct: true
+  - id: b
+    text: "Sorun, iki kullanıcının aynı anda `SELECT` çalıştırabilmesidir. `SELECT` ve `UPDATE` işlemlerini bir transaction içine almak yeterlidir; transaction içindeki işlemler birbirini bekler."
+    misconception: { tr: "Transaction kullanıldığında işlemlerin otomatik olarak sıraya gireceğini sanır. Oysa Read Committed seviyesinde transaction tek başına lost update'i önlemez; iki transaction da aynı eski değeri okuyabilir." }
+  - id: c
+    text: "Sorun, Read Committed seviyesinin güncellemeleri korumamasıdır. Isolation seviyesini Serializable yapmak yeterlidir; uygulamada başka bir değişiklik gerekmez."
+    misconception: { tr: "Serializable seviyesinin çakışan güncellemeleri sırayla ve sessizce uyguladığını sanır. Oysa Serializable çakışmayı fark edince transaction'lardan birini serialization hatasıyla iptal eder. Uygulama bu hatayı yakalayıp işlemi yeniden denemezse o ölçüm yine sayılmaz." }
+  - id: d
+    text: "Sorun dirty read'dir: ikinci kullanıcı, birincinin henüz commit etmediği değeri okuyor. Read Committed bunu engellemediği için sayaç yanlış çıkıyor."
+    misconception: { tr: "Sorunu lost update yerine dirty read olarak tanımlar. Oysa Read Committed commit edilmemiş verinin okunmasını zaten engeller; asıl sorun iki kullanıcının da aynı eski değeri okuyup üzerine yazmasıdır." }
+explanation:
+  tr: "Read Committed seviyesinde her SQL sorgusu başladığı anda commit edilmiş veriyi görür. İki kullanıcı da kendi `SELECT` sorgusunu çalıştırdığında sayaç henüz 40 olduğu için ikisi de 40 okur; Read Committed, okunan değerin yazma anına kadar değişmediğini kontrol etmez. `attempt_count = attempt_count + 1` ile ikinci `UPDATE` satır kilidinin açılmasını bekler ve kilit açıldığında güncel 41 değerinin üzerine 1 ekleyerek 42 yazar; böylece ilk güncelleme kaybolmaz."
+resources: [pg-transaction-isolation]
+source: { kind: original }
+review: { status: draft }

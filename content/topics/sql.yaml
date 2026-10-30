@@ -56,3 +56,9 @@ resources:
     kind: docs
     lang: en
     levels: [2]
+  - id: pg-datatype-json
+    title: "PostgreSQL: JSON Types"
+    url: "https://www.postgresql.org/docs/current/datatype-json.html"
+    kind: docs
+    lang: en
+    levels: [4]
