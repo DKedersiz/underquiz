@@ -61,7 +61,7 @@ npx drizzle-kit migrate
 Afterward to see if you did create the tables in the database run: 
 
 ```bash 
-docker compose exec db psql -U underquiz -d underquiz
+docker compose exec db psql -U <POSTGRES_USER> -d underquiz
 ```
 
 Once connected, list the tables by running:
