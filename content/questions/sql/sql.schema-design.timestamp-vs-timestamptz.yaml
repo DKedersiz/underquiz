@@ -1,0 +1,27 @@
+id: sql.schema-design.timestamp-vs-timestamptz
+version: 1
+topic: sql
+subtopic: schema-design
+level: 2
+type: mc
+tags: [timestamp, timestamptz, time-zone]
+prompt:
+  tr: "`completed_at` sütunu `timestamp` (without time zone) olarak tanımlı. Uygulama bu sütuna `'2026-10-29 14:00+03'` değerini yazıyor. Daha sonra saat dilimi UTC olan bir oturumda bu satır okunuyor. Okunan değer ve bu tasarım hakkında hangisi doğrudur?"
+options:
+  - id: a
+    text: "Değer `2026-10-29 11:00:00` olarak okunur; PostgreSQL `+03` bilgisini kullanarak değeri UTC'ye dönüştürür."
+    misconception: { tr: "`timestamp without time zone` türünün de saat dilimi farkını dikkate alıp zamanı UTC'ye çevirdiğini sanır." }
+  - id: b
+    text: "Değer `2026-10-29 14:00:00` olarak okunur; saat dilimi bilgisi saklanmaz ve bu tür tek başına gerçek bir anı temsil etmez."
+    correct: true
+  - id: c
+    text: "Değer `2026-10-29 14:00:00+03` olarak okunur; PostgreSQL, `+03` bilgisini sütunda saklar ve okuma sırasında korur."
+    misconception: { tr: "`timestamp without time zone` türünün saat dilimi bilgisini de sakladığını ve okunan değerde koruduğunu sanır." }
+  - id: d
+    text: "Değer yazılırken hata oluşur; PostgreSQL, `timestamp without time zone` sütununa saat dilimi içeren bir değer yazılmasını reddeder."
+    misconception: { tr: "Saat dilimi içeren bir değerin bu sütuna yazılamayacağını ve PostgreSQL'in işlemi reddedeceğini sanır." }
+explanation:
+  tr: "`timestamp without time zone` saat dilimi bilgisini saklamaz; örnekteki `+03` bilgisini sessizce yok sayar. Bu nedenle değer UTC oturumunda da `2026-10-29 14:00:00` olarak okunur. `timestamptz` ise girilen saat dilimini kullanarak gerçek zaman anını belirler, ancak saat diliminin kendisini saklamaz; zamanı dahili olarak UTC tabanlı biçimde tutar ve okurken oturumun saat dilimine göre gösterir. Bu nedenle `completed_at` bir işlemin gerçekleştiği gerçek anı temsil edecekse `timestamptz` daha uygun bir seçimdir."
+resources: [pg-datatype-datetime]
+source: { kind: original }
+review: { status: draft }

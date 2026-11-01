@@ -1,0 +1,27 @@
+id: sql.keys-constraints.check-vs-unique
+version: 1
+topic: sql
+subtopic: keys-constraints
+level: 2
+type: mc
+tags: [check, unique, primary-key]
+prompt:
+  tr: "`answers` tablosunda aynı ölçümde aynı soruya ikinci bir cevap kaydedilmesini engellemek istiyoruz; yani aynı `(result_id, question_id)` çifti iki kez bulunmamalı. Bir ekip arkadaşın bunun için tabloya bir `CHECK` kısıtı eklemeyi öneriyor. Bu öneri hakkında hangisi doğrudur?"
+options:
+  - id: a
+    text: "`CHECK`, tablodaki diğer satırları karşılaştırarak aynı çiftin tekrar eklenmesini engelleyebilir."
+    misconception: { tr: "`CHECK` kısıtının diğer satırlardaki değerleri de karşılaştırabildiğini ve böylece benzersizliği sağlayabildiğini sanır." }
+  - id: b
+    text: "`CHECK` bunun için uygun değildir; iki sütunlu bir `UNIQUE` kısıtı aynı çiftin tekrarını engeller."
+    correct: true
+  - id: c
+    text: "`CHECK` bunun için uygun değildir; `result_id` ve `question_id` sütunlarına ayrı ayrı `UNIQUE` kısıtları eklenmelidir."
+    misconception: { tr: "İki sütunun birlikte benzersiz olmasıyla her sütunun ayrı ayrı benzersiz olmasını karıştırır. Bu yaklaşımla bir ölçüm yalnızca tek bir cevap kaydedebilir, bir soru da tüm ölçümler boyunca yalnızca bir kez cevaplanabilir." }
+  - id: d
+    text: "Ek bir kısıt gerekmez; `answers` tablosundaki `id` primary key'i her cevabın benzersiz olmasını zaten garanti eder."
+    misconception: { tr: "Her satırın benzersiz bir `id` değerine sahip olmasının, aynı `(result_id, question_id)` çiftinin tekrarlanmasını da engellediğini sanır." }
+explanation:
+  tr: "`PRIMARY KEY (id)` her cevabın kimliğini benzersiz yapar ama aynı ölçüm-soru çiftinin tekrarlanmasını engellemez. Bunun için `UNIQUE (result_id, question_id)` gerekir. `CHECK` ise yalnızca eklenen ya da güncellenen satırdaki koşulları denetler; başka satırlarla karşılaştırma yaparak bu benzersizliği sağlayamaz."
+resources: [pg-constraints]
+source: { kind: original }
+review: { status: draft }

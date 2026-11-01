@@ -1,0 +1,27 @@
+id: sql.indexing.low-selectivity-seq-scan
+version: 1
+topic: sql
+subtopic: indexing
+level: 3
+type: mc
+tags: [explain, seq-scan, b-tree, selectivity]
+prompt:
+  tr: "`results` tablosunda 200 bin satır var ve `completed_at` sütununda B-tree index bulunuyor. `WHERE completed_at > now() - interval '1 year'` sorgusu tablonun yaklaşık %80'ini döndürüyor ve `EXPLAIN ANALYZE` çıktısında Seq Scan görülüyor. Ekip arkadaşın \"index bozulmuş, yeniden oluşturalım\" diyor. Hangisi doğrudur?"
+options:
+  - id: a
+    text: "Sorgu tablonun yaklaşık %80'ini döndürdüğü için PostgreSQL, index üzerinden satırları bulup ardından tablodan okumak yerine tüm tabloyu taramayı daha düşük maliyetli bulabilir. Index bozulmuş değildir; Seq Scan bu durumda normal ve verimli bir seçimdir."
+    correct: true
+  - id: b
+    text: "B-tree index yalnızca eşitlik (`=`) sorgularında kullanılır. `>` gibi karşılaştırma operatörlerinde PostgreSQL Seq Scan yapmak zorundadır."
+    misconception: { tr: "B-tree index'in yalnızca tam eşleşmeler için kullanılabildiğini sanır. Oysa B-tree, sıralı yapısı sayesinde `>`, `<`, `BETWEEN` gibi aralık sorgularında da kullanılabilir." }
+  - id: c
+    text: "`EXPLAIN ANALYZE` çıktısında Seq Scan görülmesi, PostgreSQL'in mevcut index'i tanımadığını gösterir. Index'i yeniden oluşturmak sorgunun Index Scan kullanmasını sağlar."
+    misconception: { tr: "Seq Scan görülmesini index'in bozulduğu veya veritabanı tarafından tanınmadığı şeklinde yorumlar. Oysa PostgreSQL index'i tanısa bile maliyet hesabına göre Seq Scan'i tercih edebilir; index'i yeniden oluşturmak bu tercihi değiştirmez." }
+  - id: d
+    text: "Sorguda `now() - interval '1 year'` gibi bir ifade kullanıldığı için PostgreSQL mevcut B-tree index'i kullanamaz. Tarih değerini sabit bir değere çevirmek Index Scan yapılmasını sağlar."
+    misconception: { tr: "`WHERE` koşulunda fonksiyon veya hesaplama bulunmasının index kullanımını her durumda engellediğini sanır. Oysa burada fonksiyon index'li sütuna değil, karşılaştırılan değere uygulanır; B-tree index aralık taraması için kullanılabilir." }
+explanation:
+  tr: "B-tree index, `completed_at` değerlerini sıralı tuttuğu için `>` gibi aralık koşullarında kullanılabilir. Ancak index kullanmak her zaman daha hızlı değildir. Bu sorgu tablonun yaklaşık %80'ini döndürdüğünden PostgreSQL, index üzerinden eşleşen kayıtları bulup tablodan tek tek okumak yerine tüm tabloyu baştan sona taramayı daha ucuz bulabilir."
+resources: [use-the-index-luke, pg-using-explain]
+source: { kind: original }
+review: { status: draft }

@@ -1,0 +1,27 @@
+id: sql.keys-constraints.fk-one-to-many
+version: 1
+topic: sql
+subtopic: keys-constraints
+level: 1
+type: mc
+tags: [foreign-key, one-to-many]
+prompt:
+  tr: "Bir sınav sonucu (`result`) birden fazla cevap (`answer`) içerebilir. Her cevap yalnızca bir sınav sonucuna aittir. Bu ilişkiyi ilişkisel veritabanında doğru modelleyen yaklaşım hangisidir?"
+options:
+  - id: a
+    text: "`results` tablosuna `answer_id` eklenir; çünkü ilişkiyi oluşturan üst kayıt, kendisine bağlı kayıtların kimliklerini tutmalıdır."
+    misconception: { tr: "Üst tablonun kendisine bağlı kayıtların kimliklerini tutması gerektiğini düşünür. Bu tasarımda bir sonuç için birden fazla cevap kimliğini tek hücrede tutmak gerekebilir; bu, ilişkisel modelin normal kullanımına uygun değildir." }
+  - id: b
+    text: "`answers` tablosuna `result_id` eklenir; çünkü her cevap tek bir sonuca ait olduğundan yabancı anahtar çok olan tarafta tutulur."
+    correct: true
+  - id: c
+    text: "Her iki tabloya da diğer tablonun kimliği eklenir; çünkü ilişkinin iki yönden de açıkça tanımlanması gerekir."
+    misconception: { tr: "İlişkinin iki yönde de foreign key gerektirdiğini düşünür. Tek bir foreign key yeterlidir; iki taraflı tekrar tutarsızlık ve gereksiz bağımlılık oluşturabilir." }
+  - id: d
+    text: "İki tablo arasında bir ara tablo oluşturulur; çünkü birden fazla cevap içeren her ilişki ayrı bir tabloyla temsil edilmelidir."
+    misconception: { tr: "Birden fazla ilişkili kayıt varsa mutlaka ara tablo gerektiğini düşünür. Ara tablo N–N ilişkilerde uygundur; burada gereksizdir ve ek bir `UNIQUE` kısıtı olmadan her cevabın tek bir sonuçla ilişkilendirilmesi kuralını kendi başına garanti etmez." }
+explanation:
+  tr: "Bir `result` birden fazla `answer` kaydına sahip olabilir, ancak her `answer` yalnızca bir `result` kaydına aittir. Bu nedenle `result_id`, `answers` tablosunda foreign key olarak tutulur. Böylece her satır tek bir sonuç kimliği taşır ve ilişki doğrudan modellenir."
+resources: [pg-constraints]
+source: { kind: original }
+review: { status: draft }
