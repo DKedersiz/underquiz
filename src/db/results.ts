@@ -2,8 +2,8 @@ import { db } from ".";
 import { answersTable, resultsTable } from "./schema";
 import { eq } from "drizzle-orm";
 
-type NewResult = typeof resultsTable.$inferInsert;
-type NewAnswer = Omit<typeof answersTable.$inferInsert, "resultId">;
+export type NewResult = typeof resultsTable.$inferInsert;
+export type NewAnswer = Omit<typeof answersTable.$inferInsert, "resultId">;
 
 export async function getResultById (id: string) {
     const rows = await db.select()
