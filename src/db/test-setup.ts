@@ -10,7 +10,6 @@ export async function setup() {
         throw new Error("TEST_DATABASE_URL is not set. Copy .env.example to .env and fill it in.");
     }
 
-    console.log("Migration için kullanılan:", dbUrl);
     const db = drizzle(dbUrl);
 
     await migrate(db, { migrationsFolder: "./drizzle" });
