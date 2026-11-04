@@ -52,33 +52,39 @@ describe("Quiz Results DB", () => {
     expect(result).toBeNull();
   });
 
- it("Unique constraint check", async () => {
-  const mockResult: NewResult = {
-    topicId: "javascript-basics",
-    contentKey: "js-101",
-    level: 2,
-    levelScores: [],
-    subtopicScores: [{ id: "xd", earned: 3, max: 5 }],
-    completedAt: new Date(),
-  };
+  it("Rollback check on saveResult", async () => {
+    const mockResult: NewResult = {
+      topicId: "javascript-basics",
+      contentKey: "js-101",
+      level: 2,
+      levelScores: [],
+      subtopicScores: [{ id: "xd", earned: 3, max: 5 }],
+      completedAt: new Date(),
+    };
 
-  const mockAnswers: NewAnswer[] = [
-    {
-      questionId: "q-1",
-      questionType: "mc",
-      optionId: "opt-a",
-      openAnswer: null,
-      credit: 1.0,
-    },
-    {
-      questionId: "q-1",
-      questionType: "mc",
-      optionId: "opt-b",
-      openAnswer: null,
-      credit: 1.0,
-    },
-  ];
+    const mockAnswers: NewAnswer[] = [
+      {
+        questionId: "q-1",
+        questionType: "mc",
+        optionId: "opt-a",
+        openAnswer: null,
+        credit: 1.0,
+      },
+      {
+        questionId: "q-1",
+        questionType: "mc",
+        optionId: "opt-b",
+        openAnswer: null,
+        credit: 1.0,
+      },
+    ];
 
-  await expect(saveResult(mockResult, mockAnswers)).rejects.toThrow();
+    await expect(saveResult(mockResult, mockAnswers)).rejects.toThrow();
+
+    const results = await db.select().from(resultsTable);
+    const answers = await db.select().from(answersTable);
+
+    expect(results).toHaveLength(0);
+    expect(answers).toHaveLength(0);
 });
 });
