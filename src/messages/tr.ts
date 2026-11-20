@@ -105,6 +105,11 @@ export const tr = {
     body: "Aradığın adres taşınmış ya da hiç var olmamış olabilir.",
     home: "Ana sayfaya dön",
   },
+  auth: {
+    signIn: "GitHub ile giriş",
+    signedIn: "Giriş yapıldı",
+    signOut: "Çıkış",
+  },
   footer: {
     note: "Sorular gerçek mülakat senaryolarından yola çıkılarak yazıldı ve tek tek incelendi.",
     by: "Yapan",

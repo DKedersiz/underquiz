@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthStatus } from "@/components/AuthStatus";
 import { loadTopicSummaries } from "@/lib/content/load";
 import { tr } from "@/messages/tr";
 
@@ -13,6 +14,9 @@ export default async function Home() {
   return (
     <div className="space-y-16">
       <section>
+        <div className="mb-6 flex justify-end">
+          <AuthStatus />
+        </div>
         <p className="font-sans text-xs font-semibold tracking-[0.08em] text-accent uppercase">{t.eyebrow}</p>
         <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-balance sm:text-4xl">
           {t.title}
