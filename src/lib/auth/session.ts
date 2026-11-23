@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm";
 import { timingSafeEqual, createHash, getRandomValues } from "node:crypto";
 import { db } from "@/db";
 import { sessionsTable, usersTable } from "@/db/schema";
+import { and, eq, lt, or } from "drizzle-orm";
 
 const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30;
 const SESSION_IDLE_TIMEOUT_MS = 1000 * 60 * 60 * 24 * 7;
@@ -123,4 +123,22 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 
 export async function invalidateSession(sessionId: string): Promise<void> {
 	await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId));
+}
+
+export async function deleteExpiredSessions(userId: string): Promise<void> {
+	const now = Date.now();
+	const maxAgeThreshold = new Date(now - SESSION_MAX_AGE_MS);
+	const idleThreshold = new Date(now - SESSION_IDLE_TIMEOUT_MS);
+
+	await db
+		.delete(sessionsTable)
+		.where(
+			and(
+				eq(sessionsTable.userId, userId),
+				or(
+					lt(sessionsTable.createdAt, maxAgeThreshold),
+					lt(sessionsTable.tokenLastVerifiedAt, idleThreshold)
+				)
+			)
+		);
 }

@@ -3,7 +3,13 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
-import { createSession } from "@/lib/auth/session";
+import {
+	createSession,
+	deleteExpiredSessions,
+	invalidateSession,
+	validateSessionToken,
+} from "@/lib/auth/session";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/current";
 
 export async function GET(request: Request): Promise<NextResponse> {
 	const clientId = process.env.GITHUB_CLIENT_ID;
@@ -100,12 +106,23 @@ export async function GET(request: Request): Promise<NextResponse> {
 		})
 		.returning({ id: usersTable.id });
 
+	const oldToken = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
+
+	if (oldToken) {
+		const { session: existingSession } = await validateSessionToken(oldToken);
+		if (existingSession) {
+			await invalidateSession(existingSession.id);
+		}
+	}
+
+	await deleteExpiredSessions(user.id);
+
 	const session = await createSession(user.id);
 
 	const response = NextResponse.redirect(new URL("/", appUrl));
 	const isProduction = process.env.NODE_ENV === "production";
 
-	response.cookies.set("session", session.token, {
+	response.cookies.set(SESSION_COOKIE_NAME, session.token, {
 		path: "/",
 		httpOnly: true,
 		secure: isProduction,
