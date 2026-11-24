@@ -5,6 +5,7 @@ import { bigint, bytea, check, doublePrecision, index, jsonb, pgTable, smallint,
 
 export const resultsTable = pgTable("results", {
   id: uuid().primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => usersTable.id, { onDelete: "cascade"}).notNull(),
   topicId: text("topic_id").notNull(),
   contentKey: text("content_key").notNull(),
   level: smallint().notNull(),
@@ -13,7 +14,8 @@ export const resultsTable = pgTable("results", {
   completedAt: timestamp("completed_at", {withTimezone: true,}).notNull(),
 },
 (table) => [
-    check("level_check", sql`${table.level} BETWEEN 0 AND 4`)
+    check("level_check", sql`${table.level} BETWEEN 0 AND 4`),
+    index("results_user_id_completed_at_idx").on(table.userId,table.completedAt)
 ]
 );
 
