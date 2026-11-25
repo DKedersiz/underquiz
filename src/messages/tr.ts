@@ -98,6 +98,10 @@ export const tr = {
     copyResult: "Sonucu kopyala",
     copied: "✓ Kopyalandı",
     copyFailed: "✕ Kopyalanamadı",
+    saved: "Sonuç başarıyla kaydedildi.",
+    saving: "Sonuç kaydediliyor.",
+    failed: "Sonuç kaydedilirken bir hatayla karşılaşıldı.",
+    unauthorized: "Bu sonuç kaydedilemedi, sonraki sonuçların kaydedilebilmesi için lütfen giriş yapılmış halde çöz.",
     shareSelfAssessed: "Açık uçlu sorular öz değerlendirmeyle puanlandı.",
   },
   notFound: {

@@ -1,6 +1,7 @@
 import type { Answers, TopicView } from "@/lib/quiz/types";
 
 export type Phase = "answering" | "reviewing" | "results";
+export type SaveStatus = "saving" | "saved" | "unauthorized" | "failed";
 
 export type QuizState = {
   contentKey: string;
@@ -10,6 +11,7 @@ export type QuizState = {
   reviewed: string[]; // open questions whose self-assessment was saved
   answers: Answers;
   optionOrder: Record<string, string[]>;
+  saveStatus?: SaveStatus;
 };
 
 const storageKey = (topicId: string) => `underquiz:v1:${topicId}`;

@@ -9,8 +9,9 @@ import { Badge, Button, Card } from "./ui";
 import { formatScore } from "@/lib/format";
 import { shareText } from "@/lib/quiz/shareText";
 import { useEffect, useState } from "react";
+import type { SaveStatus } from "./state";
 
-export function Results({ topic, answers, onRestart }: { topic: TopicView; answers: Answers; onRestart: () => void }) {
+export function Results({ topic, answers, onRestart, saveStatus }: { topic: TopicView; answers: Answers; onRestart: () => void; saveStatus?: SaveStatus}) {
   const t = tr.results;
   const result = scoreTopic(topic.questions, answers, topic.subtopics.map((s) => s.id));
   const growth = growthList(topic.questions, answers);
@@ -40,6 +41,13 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
     copied: t.copied,
     failed: t.copyFailed
   }[copyState];
+
+  const saveLabel = saveStatus && {
+    saved: t.saved,
+    saving: t.saving,
+    unauthorized: t.unauthorized,
+    failed: t.failed,
+  }[saveStatus];
 
   return (
     <div className="space-y-12">
@@ -72,6 +80,7 @@ export function Results({ topic, answers, onRestart }: { topic: TopicView; answe
         <Button onClick={copy} variant="ghost" aria-live="polite">
           {copyLabel}
         </Button>
+        {saveLabel && <p className="mt-3 text-sm text-muted">{saveLabel}</p>}
       </section>
 
       <section>

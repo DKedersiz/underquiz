@@ -6,7 +6,7 @@ import { tr } from "@/messages/tr";
 import { QuestionStep } from "./QuestionStep";
 import { ReviewStep } from "./ReviewStep";
 import { Results } from "./Results";
-import { freshState, loadState, saveState, type QuizState } from "./state";
+import { freshState, loadState, saveState, type SaveStatus, type QuizState } from "./state";
 
 // Rendered only on the client (see QuizLoader) because saved progress lives in localStorage.
 export default function Quiz({ topic }: { topic: TopicView }) {
@@ -27,6 +27,30 @@ export default function Quiz({ topic }: { topic: TopicView }) {
     if (window.confirm(tr.quiz.restartConfirm)) setState(freshState(topic));
   };
 
+  const finish = async () => {
+    update({ phase: "results", saveStatus: "saving"});
+
+    try {
+      const response = await fetch("/api/results", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ topicId: topic.id, contentKey: state.contentKey, answers: state.answers})
+    })
+
+    let saveStatus : SaveStatus;
+
+    if (response.status === 201) saveStatus = "saved";
+    else if (response.status === 401) saveStatus = "unauthorized";
+    else saveStatus = "failed";
+
+    setState((s) => ({...s, saveStatus}));
+    } catch {
+      setState((s) => ({ ...s, saveStatus: "failed" }));
+    }
+  }
+
   const header = (
     <div className="mb-8 flex items-center justify-between gap-4">
       <h1 className="text-xl font-semibold tracking-tight">{topic.title}</h1>
@@ -43,7 +67,11 @@ export default function Quiz({ topic }: { topic: TopicView }) {
     const last = state.index === topic.questions.length - 1;
     const next = () => {
       if (!last) return update({ index: state.index + 1 });
-      update({ phase: toReview.length > 0 ? "reviewing" : "results", reviewIndex: 0 });
+      if (toReview.length > 0 ) {
+        update({ phase: "reviewing", reviewIndex: 0});
+      } else {
+        finish();
+      }
     };
     return (
       <div>
@@ -86,7 +114,7 @@ export default function Quiz({ topic }: { topic: TopicView }) {
           }
           onNext={() =>
             state.reviewIndex === toReview.length - 1
-              ? update({ phase: "results" })
+              ? finish()
               : update({ reviewIndex: state.reviewIndex + 1 })
           }
         />
@@ -96,7 +124,7 @@ export default function Quiz({ topic }: { topic: TopicView }) {
 
   return (
     <div>
-      <Results topic={topic} answers={state.answers} onRestart={() => setState(freshState(topic))} />
+      <Results topic={topic} answers={state.answers} onRestart={() => setState(freshState(topic))} saveStatus= {state.saveStatus} />
     </div>
   );
 }
