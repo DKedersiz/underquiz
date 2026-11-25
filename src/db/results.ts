@@ -1,4 +1,4 @@
-import { db } from ".";
+import { getDb } from ".";
 import { answersTable, resultsTable } from "./schema";
 import { eq } from "drizzle-orm";
 
@@ -6,7 +6,7 @@ export type NewResult = Omit<typeof resultsTable.$inferInsert, "userId">;
 export type NewAnswer = Omit<typeof answersTable.$inferInsert, "resultId">;
 
 export async function getResultById (id: string) {
-    const rows = await db.select()
+    const rows = await getDb().select()
     .from(resultsTable)
     .where(eq(resultsTable.id, id));
 
@@ -19,7 +19,7 @@ export async function saveResult (resultInput: NewResult, answersInput: NewAnswe
         throw new Error("At least one answer is required");
     }
 
-    return db.transaction(async (tx) => {
+    return getDb().transaction(async (tx) => {
         const [result] = await tx.insert(resultsTable).values({...resultInput, userId}).returning({insertedId: resultsTable.id});
 
         await tx

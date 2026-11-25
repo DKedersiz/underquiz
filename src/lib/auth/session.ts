@@ -1,5 +1,5 @@
 import { timingSafeEqual, createHash, getRandomValues } from "node:crypto";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { sessionsTable, usersTable } from "@/db/schema";
 import { and, eq, lt, or } from "drizzle-orm";
 
@@ -43,7 +43,7 @@ export async function createSession(userId: string): Promise<SessionWithToken> {
 
 	const token = `${id}.${secret}`;
 
-	await db.insert(sessionsTable).values({
+	await getDb().insert(sessionsTable).values({
 		id,
 		userId,
 		secretHash,
@@ -71,7 +71,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		return { session: null, user: null };
 	}
 
-	const result = await db
+	const result = await getDb()
 		.select({
 			session: sessionsTable,
 			user: usersTable,
@@ -112,7 +112,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		const newVerifiedAt = new Date(now);
 		session.tokenLastVerifiedAt = newVerifiedAt;
 
-		await db
+		await getDb()
 			.update(sessionsTable)
 			.set({ tokenLastVerifiedAt: newVerifiedAt })
 			.where(eq(sessionsTable.id, session.id));
@@ -122,7 +122,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 }
 
 export async function invalidateSession(sessionId: string): Promise<void> {
-	await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId));
+	await getDb().delete(sessionsTable).where(eq(sessionsTable.id, sessionId));
 }
 
 export async function deleteExpiredSessions(userId: string): Promise<void> {
@@ -130,7 +130,7 @@ export async function deleteExpiredSessions(userId: string): Promise<void> {
 	const maxAgeThreshold = new Date(now - SESSION_MAX_AGE_MS);
 	const idleThreshold = new Date(now - SESSION_IDLE_TIMEOUT_MS);
 
-	await db
+	await getDb()
 		.delete(sessionsTable)
 		.where(
 			and(

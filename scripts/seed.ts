@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { saveResult, type NewAnswer, type NewResult } from "@/db/results";
 import { usersTable } from "@/db/schema";
 
@@ -174,7 +174,7 @@ async function seed() {
     throw new Error(`Seed can only be run in local environment! Target: ${host}`);
   }
 
-  const [user] = await db
+  const [user] = await getDb()
 		.insert(usersTable)
 		.values({ githubId: GITHUB_USER_ID})
 		.onConflictDoUpdate({
@@ -186,7 +186,7 @@ async function seed() {
   await saveResult(javaResult, javaAnswers,user.id);
   await saveResult(sqlResult, sqlAnswers, user.id);
 
-  await db.$client.end();
+  await getDb().$client.end();
 
 }
 

@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { usersTable } from "@/db/schema";
 import {
 	createSession,
@@ -97,7 +97,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 		return new NextResponse("Geçersiz GitHub kullanıcı verisi", { status: 502 });
 	}
 
-	const [user] = await db
+	const [user] = await getDb()
 		.insert(usersTable)
 		.values({ githubId: githubUser.id })
 		.onConflictDoUpdate({

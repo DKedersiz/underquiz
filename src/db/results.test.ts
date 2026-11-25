@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { beforeEach, describe, expect, it } from "vitest";
-import { db } from "./index";
+import { getDb } from "./index";
 import { answersTable, resultsTable, usersTable } from "./schema";
 import { getResultById, saveResult, type NewAnswer, type NewResult} from "./results";
 
@@ -8,8 +8,8 @@ describe("Quiz Results DB", () => {
   let mockUserId : string;
 
   beforeEach(async () => {
-    await db.delete(usersTable);
-    const [user] = await db
+    await getDb().delete(usersTable);
+    const [user] = await getDb()
         .insert(usersTable)
         .values({ githubId: 1})
         .returning({ id: usersTable.id });
@@ -88,8 +88,8 @@ describe("Quiz Results DB", () => {
 
     await expect(saveResult(mockResult, mockAnswers, mockUserId)).rejects.toThrow();
 
-    const results = await db.select().from(resultsTable);
-    const answers = await db.select().from(answersTable);
+    const results = await getDb().select().from(resultsTable);
+    const answers = await getDb().select().from(answersTable);
 
     expect(results).toHaveLength(0);
     expect(answers).toHaveLength(0);
