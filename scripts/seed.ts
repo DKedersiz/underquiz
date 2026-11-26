@@ -1,5 +1,8 @@
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { saveResult, type NewAnswer, type NewResult } from "@/db/results";
+import { usersTable } from "@/db/schema";
+
+const GITHUB_USER_ID = 123313258;
 
 const javaResult: NewResult = {
   id: "c18f3a8b-3e5b-4c22-92a1-5fbb77f6b8b1",
@@ -171,10 +174,19 @@ async function seed() {
     throw new Error(`Seed can only be run in local environment! Target: ${host}`);
   }
 
-  await saveResult(javaResult, javaAnswers);
-  await saveResult(sqlResult, sqlAnswers);
+  const [user] = await getDb()
+		.insert(usersTable)
+		.values({ githubId: GITHUB_USER_ID})
+		.onConflictDoUpdate({
+			target: usersTable.githubId,
+			set: { githubId: GITHUB_USER_ID},
+		})
+		.returning({ id: usersTable.id });
 
-  await db.$client.end();
+  await saveResult(javaResult, javaAnswers,user.id);
+  await saveResult(sqlResult, sqlAnswers, user.id);
+
+  await getDb().$client.end();
 
 }
 

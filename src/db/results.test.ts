@@ -1,13 +1,20 @@
 import crypto from "node:crypto";
 import { beforeEach, describe, expect, it } from "vitest";
-import { db } from "./index";
-import { answersTable, resultsTable } from "./schema";
+import { getDb } from "./index";
+import { answersTable, resultsTable, usersTable } from "./schema";
 import { getResultById, saveResult, type NewAnswer, type NewResult} from "./results";
 
 describe("Quiz Results DB", () => {
+  let mockUserId : string;
+
   beforeEach(async () => {
-    await db.delete(answersTable);
-    await db.delete(resultsTable);
+    await getDb().delete(usersTable);
+    const [user] = await getDb()
+        .insert(usersTable)
+        .values({ githubId: 1})
+        .returning({ id: usersTable.id });
+
+    mockUserId = user.id;
   });
 
   it("Should save a new result and read with returned id value", async () => {
@@ -31,7 +38,7 @@ describe("Quiz Results DB", () => {
     ];
 
     
-    const insertedId = await saveResult(mockResult, mockAnswers);
+    const insertedId = await saveResult(mockResult, mockAnswers,mockUserId);
     const savedRecord = await getResultById(insertedId);
 
     
@@ -79,10 +86,10 @@ describe("Quiz Results DB", () => {
       },
     ];
 
-    await expect(saveResult(mockResult, mockAnswers)).rejects.toThrow();
+    await expect(saveResult(mockResult, mockAnswers, mockUserId)).rejects.toThrow();
 
-    const results = await db.select().from(resultsTable);
-    const answers = await db.select().from(answersTable);
+    const results = await getDb().select().from(resultsTable);
+    const answers = await getDb().select().from(answersTable);
 
     expect(results).toHaveLength(0);
     expect(answers).toHaveLength(0);

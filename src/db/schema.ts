@@ -1,10 +1,11 @@
 import type {TopicResult } from "@/lib/quiz/scoring";
 import type { OpenAnswer } from "@/lib/quiz/types";
 import { sql } from "drizzle-orm";
-import { check, doublePrecision, jsonb, pgTable, smallint, text, timestamp, unique, uuid} from "drizzle-orm/pg-core";
+import { bigint, bytea, check, doublePrecision, index, jsonb, pgTable, smallint, text, timestamp, unique, uuid} from "drizzle-orm/pg-core";
 
 export const resultsTable = pgTable("results", {
   id: uuid().primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => usersTable.id, { onDelete: "cascade"}).notNull(),
   topicId: text("topic_id").notNull(),
   contentKey: text("content_key").notNull(),
   level: smallint().notNull(),
@@ -13,7 +14,8 @@ export const resultsTable = pgTable("results", {
   completedAt: timestamp("completed_at", {withTimezone: true,}).notNull(),
 },
 (table) => [
-    check("level_check", sql`${table.level} BETWEEN 0 AND 4`)
+    check("level_check", sql`${table.level} BETWEEN 0 AND 4`),
+    index("results_user_id_completed_at_idx").on(table.userId,table.completedAt)
 ]
 );
 
@@ -31,4 +33,21 @@ export const answersTable = pgTable("answers", {
     check("question_type_check", sql`${table.questionType} IN ('mc', 'open')`),
     check("answer_shape_check", sql`(${table.questionType} = 'mc' AND ${table.optionId} IS NOT NULL AND ${table.openAnswer} IS NULL) OR (${table.questionType} = 'open' AND ${table.optionId} IS NULL AND ${table.openAnswer} IS NOT NULL)`)
 ]
-)
+);
+
+export const usersTable = pgTable("users", {
+    id: uuid().primaryKey().defaultRandom(),
+    githubId: bigint("github_id", { mode: "number" }).notNull().unique(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const sessionsTable = pgTable("sessions", {
+    id: text().primaryKey(),
+    userId: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+    secretHash: bytea("secret_hash").notNull(),
+    tokenLastVerifiedAt: timestamp("token_last_verified_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+},
+(table) => [
+    index("sessions_user_id_idx").on(table.userId),
+]);

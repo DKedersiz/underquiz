@@ -98,12 +98,21 @@ export const tr = {
     copyResult: "Sonucu kopyala",
     copied: "✓ Kopyalandı",
     copyFailed: "✕ Kopyalanamadı",
+    saved: "Sonuç başarıyla kaydedildi.",
+    saving: "Sonuç kaydediliyor.",
+    failed: "Sonuç kaydedilirken bir hatayla karşılaşıldı.",
+    unauthorized: "Bu sonuç kaydedilemedi, sonraki sonuçların kaydedilebilmesi için lütfen giriş yapılmış halde çöz.",
     shareSelfAssessed: "Açık uçlu sorular öz değerlendirmeyle puanlandı.",
   },
   notFound: {
     title: "Bu sayfa burada değil",
     body: "Aradığın adres taşınmış ya da hiç var olmamış olabilir.",
     home: "Ana sayfaya dön",
+  },
+  auth: {
+    signIn: "GitHub ile giriş",
+    signedIn: "Giriş yapıldı",
+    signOut: "Çıkış",
   },
   footer: {
     note: "Sorular gerçek mülakat senaryolarından yola çıkılarak yazıldı ve tek tek incelendi.",
