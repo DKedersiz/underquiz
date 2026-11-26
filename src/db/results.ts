@@ -1,6 +1,6 @@
 import { getDb } from ".";
 import { answersTable, resultsTable } from "./schema";
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 export type NewResult = Omit<typeof resultsTable.$inferInsert, "userId">;
 export type NewAnswer = Omit<typeof answersTable.$inferInsert, "resultId">;
@@ -33,4 +33,39 @@ export async function saveResult (resultInput: NewResult, answersInput: NewAnswe
 
         return result.insertedId;
     }); 
+}
+
+export async function listResultsForUser (userId: string) {
+    return getDb().select({
+        id: resultsTable.id,
+        topicId: resultsTable.topicId,
+        level: resultsTable.level,
+        completedAt: resultsTable.completedAt
+    })
+    .from(resultsTable)
+    .where(eq(resultsTable.userId, userId))
+    .orderBy(desc(resultsTable.completedAt));   
+}
+
+export async function getResultForUser (id: string, userId: string) {
+    const [row] = await getDb().select({
+        id: resultsTable.id,
+        topicId: resultsTable.topicId,
+        level: resultsTable.level,
+        completedAt: resultsTable.completedAt,
+        subtopicScores: resultsTable.subtopicScores,
+        levelScores: resultsTable.levelScores
+    })
+    .from(resultsTable)
+    .where(and(eq(resultsTable.id, id), eq(resultsTable.userId, userId)));
+
+    if (!row) {
+        return null;
+    }
+
+    const answers = await getDb().select()
+        .from(answersTable)
+        .where(eq(answersTable.resultId, row.id));
+    
+    return {...row, answers};
 }
