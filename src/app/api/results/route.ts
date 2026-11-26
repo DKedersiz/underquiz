@@ -1,4 +1,4 @@
-import { saveResult, type NewAnswer, type NewResult } from "@/db/results";
+import { listResultsForUser, saveResult, type NewAnswer, type NewResult } from "@/db/results";
 import { getCurrentSession } from "@/lib/auth/current";
 import { loadTopicView } from "@/lib/content/load";
 import { credit, scoreTopic } from "@/lib/quiz/scoring";
@@ -95,4 +95,16 @@ export async function POST (request: Request) {
     const id = await saveResult(newResult, newAnswers, user.id);
 
     return Response.json({ id }, { status: 201 });
+}
+
+export async function GET () {
+    const { user } = await getCurrentSession();
+
+    if (!user) {
+        return Response.json({error: "unauthorized"}, { status: 401 });
+    }
+
+    const results = await listResultsForUser(user.id);
+
+    return Response.json({results})
 }
